@@ -1,0 +1,9 @@
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: mindmap
+      POSTGRES_USER: mindmap
+      POSTGRES_PASSWORD: mindmap
+    ports:
+      - "5432:432"

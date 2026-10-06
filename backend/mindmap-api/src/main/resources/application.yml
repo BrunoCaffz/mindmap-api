@@ -1,0 +1,9 @@
+notion:
+  token: ${NOTION_TOKEN}
+  version: 2026-03-11
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/mindmap
+    username: mindmap
+    password: mindmap
