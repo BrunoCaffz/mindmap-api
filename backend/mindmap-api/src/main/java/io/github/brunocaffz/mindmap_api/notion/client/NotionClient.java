@@ -10,9 +10,12 @@ import tools.jackson.databind.node.ObjectNode;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Component
 public class NotionClient {
+
+    private static final Set<String> NO_RECURSE = Set.of("child_page", "child_database");
 
     private final RestClient http;
 
@@ -62,7 +65,8 @@ public class NotionClient {
     public List<JsonNode> getBlockTree(String blockId) {
         List<JsonNode> blocks = getBlockChildren(blockId);
         for (JsonNode block : blocks) {
-            if (block.path("has_children").asBoolean()) {
+            String type = block.path("type").asText();
+            if (block.path("has_children").asBoolean() && !NO_RECURSE.contains(type)) {
                 List<JsonNode> children = getBlockTree(block.path("id").asText());
                 ArrayNode array = ((ObjectNode) block).putArray("children");
                 children.forEach(array::add);
@@ -70,5 +74,4 @@ public class NotionClient {
         }
         return blocks;
     }
-
 }

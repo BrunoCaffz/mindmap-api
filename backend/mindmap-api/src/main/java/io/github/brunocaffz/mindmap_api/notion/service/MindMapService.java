@@ -21,7 +21,7 @@ public class MindMapService {
 
     public MindMapNode generateFromNotionPage(String pageId) {
         String title = notion.getPageTitle(pageId);
-        List<JsonNode> blocks = notion.getBlockChildren(pageId);
+        List<JsonNode> blocks = notion.getBlockTree(pageId);
         return parser.parse(title, blocks);
     }
 }

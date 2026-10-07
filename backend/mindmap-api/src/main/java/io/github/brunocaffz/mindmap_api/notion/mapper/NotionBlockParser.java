@@ -2,14 +2,12 @@ package io.github.brunocaffz.mindmap_api.notion.mapper;
 
 import io.github.brunocaffz.mindmap_api.enums.NodeType;
 import io.github.brunocaffz.mindmap_api.records.MindMapNode;
-import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import tools.jackson.databind.JsonNode;
 
 import java.util.*;
-
 
 @Component
 public class NotionBlockParser {
