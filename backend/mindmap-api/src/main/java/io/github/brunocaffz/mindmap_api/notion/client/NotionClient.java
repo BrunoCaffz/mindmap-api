@@ -1,6 +1,9 @@
 package io.github.brunocaffz.mindmap_api.notion.client;
 
 import io.github.brunocaffz.mindmap_api.notion.config.NotionProperties;
+import io.github.brunocaffz.mindmap_api.notion.mapper.NotionBlockParser;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 import tools.jackson.databind.JsonNode;
@@ -11,12 +14,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Component
 public class NotionClient {
+    private static final Logger log = LoggerFactory.getLogger(NotionClient.class);
 
     private static final Set<String> NO_RECURSE = Set.of("child_page", "child_database");
-
+    private final AtomicInteger calls = new AtomicInteger();
     private final RestClient http;
 
     public NotionClient(NotionProperties props){
@@ -47,6 +52,7 @@ public class NotionClient {
 
         do{
             final String current = cursor;
+            log.info("Notion call #{}", calls.incrementAndGet());
             JsonNode res = http.get()
                     .uri(b -> b.path("/blocks/{id}/children")
                     .queryParam("page_size", 100)

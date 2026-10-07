@@ -59,9 +59,14 @@ public class NotionBlockParser {
                 current.children.add(item);
                 parseBlocks(childrenOf(block), item);
             } else if (type.equals("callout")) {
-                Builder callout = new Builder(text(block, type), NodeType.CALLOUT);
-                current.children.add(callout);
-                parseBlocks(childrenOf(block), callout);
+                String calloutText = text(block, type);
+                if (calloutText.isBlank()) {
+                    parseBlocks(childrenOf(block), current);   // callout só de agrupamento: achata
+                } else {
+                    Builder callout = new Builder(calloutText, NodeType.CALLOUT);
+                    current.children.add(callout);
+                    parseBlocks(childrenOf(block), callout);
+                }
             } else if (type.equals("code")) {
                 String lang = block.path("code").path("language").asText("");
                 current.appendDescription("```" + lang + "\n" + text(block, type) + "\n```");
