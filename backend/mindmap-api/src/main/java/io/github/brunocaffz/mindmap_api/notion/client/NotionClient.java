@@ -22,16 +22,17 @@ public class NotionClient {
                 .build();
     }
 
-    public String getPageTitle(String pageId){
+    public String getPageTitle(String pageId) {
         JsonNode page = http.get().uri("/pages/{id}", pageId)
                 .retrieve().body(JsonNode.class);
 
-        for(JsonNode prop : page.path("properties")){
-            StringBuilder stringBuild = new StringBuilder();
-            prop.path("title").forEach(part -> stringBuild.append(part.path("plain_text")));
-            return stringBuild.toString();
+        for (JsonNode prop : page.path("properties")) {
+            if ("title".equals(prop.path("type").asText())) {
+                StringBuilder sb = new StringBuilder();
+                prop.path("title").forEach(part -> sb.append(part.path("plain_text").asText()));
+                return sb.toString().trim();
+            }
         }
-
         return "Untitled";
     }
 
