@@ -4,6 +4,8 @@ import io.github.brunocaffz.mindmap_api.notion.config.NotionProperties;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.ObjectNode;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -55,6 +57,18 @@ public class NotionClient {
         } while(cursor != null);
 
         return all;
+    }
+
+    public List<JsonNode> getBlockTree(String blockId) {
+        List<JsonNode> blocks = getBlockChildren(blockId);
+        for (JsonNode block : blocks) {
+            if (block.path("has_children").asBoolean()) {
+                List<JsonNode> children = getBlockTree(block.path("id").asText());
+                ArrayNode array = ((ObjectNode) block).putArray("children");
+                children.forEach(array::add);
+            }
+        }
+        return blocks;
     }
 
 }

@@ -4,7 +4,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
-public enum NodeType { ROOT, HEADING, LIST_ITEM }
+public enum NodeType { ROOT, HEADING, LIST_ITEM, CALLOUT }
 
 
 
