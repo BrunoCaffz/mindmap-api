@@ -1,0 +1,59 @@
+package io.github.brunocaffz.mindmap_api.notion.client;
+
+import io.github.brunocaffz.mindmap_api.notion.config.NotionProperties;
+import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestClient;
+import tools.jackson.databind.JsonNode;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
+@Component
+public class NotionClient {
+
+    private final RestClient http;
+
+    public NotionClient(NotionProperties props){
+        this.http = RestClient.builder()
+                .baseUrl("https://api.notion.com/v1")
+                .defaultHeader("Authorization", "Bearer " + props.token())
+                .defaultHeader("Notion-Version", props.version())
+                .build();
+    }
+
+    public String getPageTitle(String pageId){
+        JsonNode page = http.get().uri("/pages/{id}", pageId)
+                .retrieve().body(JsonNode.class);
+
+        for(JsonNode prop : page.path("properties")){
+            StringBuilder stringBuild = new StringBuilder();
+            prop.path("title").forEach(part -> stringBuild.append(part.path("plain_text")));
+            return stringBuild.toString();
+        }
+
+        return "Untitled";
+    }
+
+    public List<JsonNode> getBlockChildren(String blockId){
+        List<JsonNode> all = new ArrayList<>();
+        String cursor = null;
+
+        do{
+            final String current = cursor;
+            JsonNode res = http.get()
+                    .uri(b -> b.path("/blocks/{id}/children")
+                    .queryParam("page_size", 100)
+                    .queryParamIfPresent("start_cursor", Optional.ofNullable(current))
+                    .build(blockId))
+                    .retrieve().body(JsonNode.class);
+
+            assert res != null;
+            res.path("results").forEach(all::add);
+            cursor = res.path("has_more").asBoolean() ? res.path("next_cursor").asText() : null;
+        } while(cursor != null);
+
+        return all;
+    }
+
+}

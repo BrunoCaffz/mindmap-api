@@ -2,10 +2,12 @@ package io.github.brunocaffz.mindmap_api.notion.mapper;
 
 import io.github.brunocaffz.mindmap_api.enums.NodeType;
 import io.github.brunocaffz.mindmap_api.records.MindMapNode;
+import org.springframework.stereotype.Component;
 import tools.jackson.databind.JsonNode;
 
 import java.util.*;
 
+@Component
 public class NotionBlockParser {
     private static final Map<String, Integer> HEADING_LEVELS =
             Map.of("heading_1", 1, "heading_2", 2, "heading_3", 3);

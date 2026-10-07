@@ -1,9 +1,11 @@
-notion:
-  token: ${NOTION_TOKEN}
-  version: 2026-03-11
-
 spring:
+  application:
+    name: mindmap-api
   datasource:
-    url: jdbc:postgresql://localhost:5432/mindmap
+    url: jdbc:postgresql://localhost:5433/mindmap
     username: mindmap
     password: mindmap
+
+notion:
+  token: ${NOTION_TOKEN}
+  version: 2022-06-28
