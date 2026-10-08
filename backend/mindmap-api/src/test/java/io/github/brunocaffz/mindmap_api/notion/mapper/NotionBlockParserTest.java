@@ -59,4 +59,43 @@ public class NotionBlockParserTest {
         assertEquals(NodeType.CALLOUT, callout.type());
         assertEquals("Deny vence Allow", callout.children().get(0).title());
     }
+
+    class NotionMarkdownParserTest {
+
+        @Test
+        void parsesHeadingsCodeCalloutsAndColumns() {
+            String md = """
+            ## Effect
+            Define se a regra irá <span color="yellow">permitir</span> ou **negar**.
+```json
+            "Effect": "Allow"
+```
+            > Um **Deny explícito** tem prioridade.
+            ## Principal
+            <callout icon="💬">
+            \t- Conta AWS;
+            \t- Usuário;
+            </callout>
+            <columns>
+            \t<column ratio="50">
+            \t\t- Item na coluna
+            \t</column>
+            </columns>
+            """;
+
+            MindMapNode root = new NotionMarkdownParser().parse("Teste", md);
+
+            assertEquals(2, root.children().size());
+
+            MindMapNode effect = root.children().get(0);
+            assertEquals("Effect", effect.title());
+            assertTrue(effect.description().contains("permitir ou negar"));
+            assertTrue(effect.description().contains("```json"));
+            assertTrue(effect.description().contains("> Um Deny explícito"));
+
+            MindMapNode principal = root.children().get(1);
+            assertEquals(3, principal.children().size());   // 2 do callout (achatado) + 1 da coluna
+            assertEquals("Conta AWS;", principal.children().get(0).title());
+        }
+    }
 }

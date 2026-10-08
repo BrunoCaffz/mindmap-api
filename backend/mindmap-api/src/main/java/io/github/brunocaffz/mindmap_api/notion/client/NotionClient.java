@@ -24,6 +24,8 @@ public class NotionClient {
     private final AtomicInteger calls = new AtomicInteger();
     private final RestClient http;
 
+    private static final String MARKDOWN_VERSION = "2026-03-11";
+
     public NotionClient(NotionProperties props){
         this.http = RestClient.builder()
                 .baseUrl("https://api.notion.com/v1")
@@ -79,5 +81,17 @@ public class NotionClient {
             }
         }
         return blocks;
+    }
+
+    public String getPageMarkdown(String pageId) {
+        JsonNode res = http.get()
+                .uri("/pages/{id}/markdown", pageId)
+                .headers(h -> h.set("Notion-Version", MARKDOWN_VERSION))
+                .retrieve().body(JsonNode.class);
+
+        if (res.path("truncated").asBoolean()) {
+            log.warn("Markdown truncated for page {}; unknown blocks: {}", pageId, res.path("unknown_block_ids"));
+        }
+        return res.path("markdown").asText();
     }
 }
