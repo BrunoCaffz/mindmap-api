@@ -1,9 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import { LoadingSteps } from "@/components/LoadingSteps";
+import { motion } from "framer-motion";
+import { AppHeader } from "@/components/AppHeader";
+import { EmptyMapState } from "@/components/EmptyMapState";
+import { LoadingMap } from "@/components/LoadingMap";
+import { MapSidebar } from "@/components/MapSidebar";
 import { MindMap } from "@/components/MindMap";
 import { fetchMindMap } from "@/lib/api";
+import type { LayoutMode, Spacing } from "@/lib/layout";
+import { useTheme } from "@/lib/theme";
 import type { MindMapNode } from "@/types/mindmap";
 
 export default function Home() {
@@ -12,8 +18,12 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [tree, setTree] = useState<MindMapNode | null>(null);
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  const [mode, setMode] = useState<LayoutMode>("mindmap");
+  const [spacing, setSpacing] = useState<Spacing>("normal");
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [theme, setTheme] = useTheme();
+
+  async function handleSubmit() {
     const id = pageId.trim();
     if (!id) return;
     setLoading(true);
@@ -29,35 +39,52 @@ export default function Home() {
   }
 
   return (
-    <main className="flex h-screen flex-col gap-4 p-6">
-      <form onSubmit={handleSubmit} className="flex gap-2">
-        <input
-          value={pageId}
-          onChange={(e) => setPageId(e.target.value)}
-          placeholder="ID da página do Notion"
-          className="flex-1 rounded border border-zinc-300 bg-transparent px-3 py-2 dark:border-zinc-700"
-        />
-        <button
-          type="submit"
-          disabled={loading}
-          className="rounded bg-zinc-900 px-4 py-2 text-white disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900"
-        >
-          Gerar mapa
-        </button>
-      </form>
+    <div className="flex h-screen flex-col">
+      <AppHeader
+        pageId={pageId}
+        onPageIdChange={setPageId}
+        onSubmit={handleSubmit}
+        loading={loading}
+        mapTitle={tree?.title}
+        onToggleSidebar={() => setSidebarOpen((open) => !open)}
+      />
       {error && (
         <p
           role="alert"
-          className="rounded border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-800 dark:border-red-800 dark:bg-red-950 dark:text-red-200"
+          className="border-b border-danger-line bg-danger-soft px-4 py-2 text-sm text-danger"
         >
           {error}
         </p>
       )}
-      {(loading || tree) && (
-        <div className="min-h-0 flex-1 rounded border border-zinc-200 dark:border-zinc-800">
-          {loading ? <LoadingSteps /> : tree && <MindMap tree={tree} />}
-        </div>
-      )}
-    </main>
+      <div className="flex min-h-0 flex-1">
+        {sidebarOpen && (
+          <MapSidebar
+            mode={mode}
+            onModeChange={setMode}
+            spacing={spacing}
+            onSpacingChange={setSpacing}
+            theme={theme}
+            onThemeChange={setTheme}
+          />
+        )}
+        <main className="min-w-0 flex-1 bg-bg">
+          <motion.div
+            key={loading ? "loading" : tree ? "map" : "empty"}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.25 }}
+            className="h-full"
+          >
+            {loading ? (
+              <LoadingMap />
+            ) : tree ? (
+              <MindMap tree={tree} mode={mode} spacing={spacing} theme={theme} />
+            ) : (
+              <EmptyMapState />
+            )}
+          </motion.div>
+        </main>
+      </div>
+    </div>
   );
 }

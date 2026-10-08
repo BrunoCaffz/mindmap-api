@@ -1,27 +1,142 @@
 @import "tailwindcss";
 
+/* Tokens de cor. O tema escuro é o padrão; data-theme="light" troca os valores.
+   O atributo é definido antes da hidratação por um script no layout. */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-  color-scheme: light dark;
+  color-scheme: dark;
+  --bg: #0b0f14;
+  --surface: #111827;
+  --surface-2: #172033;
+  --line: rgba(255, 255, 255, 0.08);
+  --line-hi: rgba(255, 255, 255, 0.18);
+  --ink: #e8ecf2;
+  --muted: #8b95a7;
+  --faint: #8591a6;
+  --accent: #7c83ff;
+  --accent-soft: rgba(124, 131, 255, 0.14);
+  --accent-line: rgba(124, 131, 255, 0.45);
+  --accent-fg: #0b0f14;
+  --warn-soft: rgba(227, 169, 59, 0.12);
+  --warn-line: rgba(227, 169, 59, 0.4);
+  --danger: #fca5a5;
+  --danger-soft: rgba(239, 68, 68, 0.12);
+  --danger-line: rgba(239, 68, 68, 0.35);
+  --grid: rgba(255, 255, 255, 0.055);
+  --shadow-pop: 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+  --bg: #f6f7f9;
+  --surface: #ffffff;
+  --surface-2: #eef0f4;
+  --line: rgba(15, 23, 42, 0.1);
+  --line-hi: rgba(15, 23, 42, 0.22);
+  --ink: #0f172a;
+  --muted: #5b6577;
+  --faint: #66728a;
+  --accent: #5b5bd6;
+  --accent-soft: rgba(91, 91, 214, 0.1);
+  --accent-line: rgba(91, 91, 214, 0.4);
+  --accent-fg: #ffffff;
+  --warn-soft: rgba(196, 130, 10, 0.1);
+  --warn-line: rgba(196, 130, 10, 0.4);
+  --danger: #b91c1c;
+  --danger-soft: rgba(239, 68, 68, 0.08);
+  --danger-line: rgba(185, 28, 28, 0.3);
+  --grid: rgba(15, 23, 42, 0.07);
+  --shadow-pop: 0 8px 24px rgba(15, 23, 42, 0.1);
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-line: var(--line);
+  --color-line-hi: var(--line-hi);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-faint: var(--faint);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-line: var(--accent-line);
+  --color-accent-fg: var(--accent-fg);
+  --color-warn-soft: var(--warn-soft);
+  --color-warn-line: var(--warn-line);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-danger-line: var(--danger-line);
+  --shadow-pop: var(--shadow-pop);
   --font-sans: var(--font-plex-sans);
   --font-mono: var(--font-plex-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-plex-sans), sans-serif;
+}
+
+/* React Flow com a identidade do app */
+.react-flow {
+  --xy-edge-stroke: var(--faint);
+  --xy-edge-stroke-width: 1.4;
+  --xy-edge-stroke-selected: var(--accent);
+  --xy-background-color: var(--bg);
+  --xy-controls-button-background-color: var(--surface);
+  --xy-controls-button-background-color-hover: var(--surface-2);
+  --xy-controls-button-color: var(--muted);
+  --xy-controls-button-color-hover: var(--ink);
+  --xy-controls-button-border-color: var(--line);
+  --xy-controls-box-shadow: var(--shadow-pop);
+  --xy-minimap-background-color: var(--surface);
+  --xy-minimap-mask-background-color: rgba(11, 15, 20, 0.55);
+  --xy-minimap-mask-stroke-color: var(--accent);
+  --xy-minimap-mask-stroke-width: 1.5;
+}
+
+.react-flow[data-color-mode="light"],
+:root[data-theme="light"] .react-flow {
+  --xy-minimap-mask-background-color: rgba(246, 247, 249, 0.6);
+}
+
+.react-flow__edge-path {
+  opacity: 0.7;
+}
+
+.react-flow__attribution {
+  background: transparent;
+  color: var(--faint);
+}
+
+.react-flow__controls,
+.react-flow__minimap {
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+
+.react-flow__controls-button {
+  border-bottom-color: var(--line);
+  transition: background-color 0.15s, color 0.15s;
+}
+
+/* Barra de progresso indeterminada do loading */
+@keyframes loading-slide {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(250%);
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-plex-sans), sans-serif;
+.loading-bar {
+  animation: loading-slide 1.3s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .loading-bar {
+    animation: none;
+  }
 }

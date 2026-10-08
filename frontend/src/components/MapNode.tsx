@@ -1,25 +1,42 @@
 import { Handle, Position, type NodeProps } from "@xyflow/react";
-import type { MapFlowNode } from "@/lib/layout";
-import { NODE_HEIGHT, NODE_WIDTH } from "@/lib/layout";
-import type { MindMapNodeType } from "@/types/mindmap";
+import { motion } from "framer-motion";
+import { nodeSize, type MapFlowNode } from "@/lib/layout";
+import { BulbIcon } from "./icons";
 
-const TYPE_STYLES: Record<MindMapNodeType, string> = {
-  ROOT: "border-zinc-900 bg-zinc-900 text-white font-semibold dark:border-zinc-100 dark:bg-zinc-100 dark:text-zinc-900",
-  HEADING: "border-indigo-300 bg-indigo-50 text-indigo-950 font-medium dark:border-indigo-700 dark:bg-indigo-950 dark:text-indigo-100",
-  LIST_ITEM: "border-zinc-200 bg-white text-zinc-800 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200",
-  CALLOUT: "border-amber-300 bg-amber-50 text-amber-950 dark:border-amber-700 dark:bg-amber-950 dark:text-amber-100",
-};
+// Hierarquia visual por nível: raiz com o destaque cheio, nível 1 com tom do destaque,
+// nível 2 como superfície, nível 3 em diante mais compacto e discreto.
+const LEVEL_STYLES = [
+  "border-transparent bg-accent text-accent-fg text-[17px] font-semibold tracking-tight shadow-pop hover:brightness-110",
+  "border-accent-line bg-accent-soft text-ink text-sm font-medium hover:border-accent",
+  "border-line bg-surface text-ink text-[13px] hover:border-line-hi",
+  "border-dashed border-line bg-surface text-muted text-xs hover:border-line-hi",
+];
+
+const CLAMP = ["line-clamp-2", "line-clamp-2", "line-clamp-3", "line-clamp-2"];
 
 export function MapNode({ id, data, selected }: NodeProps<MapFlowNode>) {
+  const level = Math.min(data.depth, LEVEL_STYLES.length - 1);
+  const { width, height } = nodeSize(data.depth);
+  const isCallout = data.type === "CALLOUT";
+
+  // O botão de recolher fica na borda por onde saem as conexões.
+  const togglePosition = data.horizontal
+    ? "-right-3 top-1/2 -translate-y-1/2"
+    : "-bottom-3 left-1/2 -translate-x-1/2";
+
   return (
-    <div
-      style={{ width: NODE_WIDTH, height: NODE_HEIGHT }}
-      className={`relative flex cursor-pointer items-center rounded-lg border px-3 text-sm shadow-sm ${TYPE_STYLES[data.type]} ${
-        selected ? "ring-2 ring-sky-500" : ""
-      }`}
+    <motion.div
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.22, ease: "easeOut" }}
+      style={{ width, height }}
+      className={`relative flex cursor-pointer items-center gap-2 rounded-[10px] border px-3 transition-[border-color,box-shadow,filter] duration-150 ${LEVEL_STYLES[level]} ${
+        isCallout && level > 0 ? "!border-warn-line !bg-warn-soft" : ""
+      } ${selected ? "!border-accent outline outline-[3px] outline-offset-1 outline-accent/40" : ""}`}
     >
-      <Handle type="target" position={Position.Left} className="!opacity-0" />
-      <p className="line-clamp-3 break-words">{data.title || "(sem título)"}</p>
+      <Handle type="target" position={data.horizontal ? Position.Left : Position.Top} className="!opacity-0" />
+      {isCallout && <BulbIcon className="h-4 w-4 flex-none opacity-80" />}
+      <p className={`${CLAMP[level]} break-words leading-snug`}>{data.title || "(sem título)"}</p>
       {data.hasChildren && (
         <button
           type="button"
@@ -29,12 +46,12 @@ export function MapNode({ id, data, selected }: NodeProps<MapFlowNode>) {
             e.stopPropagation();
             data.onToggle(id);
           }}
-          className="nodrag nopan absolute -right-3 top-1/2 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-full border border-zinc-300 bg-white text-xs text-zinc-700 shadow hover:bg-zinc-100 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700"
+          className={`nodrag nopan absolute ${togglePosition} flex h-5 w-5 items-center justify-center rounded-full border border-line-hi bg-surface-2 text-xs leading-none text-muted transition-colors hover:text-ink`}
         >
           {data.collapsed ? "+" : "−"}
         </button>
       )}
-      <Handle type="source" position={Position.Right} className="!opacity-0" />
-    </div>
+      <Handle type="source" position={data.horizontal ? Position.Right : Position.Bottom} className="!opacity-0" />
+    </motion.div>
   );
 }
