@@ -51,6 +51,8 @@ export function MapSidebar({ mode, onModeChange, spacing, onSpacingChange, theme
       <Group title="Layout">
         <Option label="Mind Map" active={mode === "mindmap"} onSelect={() => onModeChange("mindmap")} />
         <Option label="Tree" active={mode === "tree"} onSelect={() => onModeChange("tree")} />
+        <Option label="Radial" active={mode === "radial"} onSelect={() => onModeChange("radial")} />
+        <Option label="Bolhas" active={mode === "bubbles"} onSelect={() => onModeChange("bubbles")} />
       </Group>
 
       <Group title="Espaçamento">

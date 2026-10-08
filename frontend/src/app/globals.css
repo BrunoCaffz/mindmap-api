@@ -15,12 +15,20 @@
   --accent: #7c83ff;
   --accent-soft: rgba(124, 131, 255, 0.14);
   --accent-line: rgba(124, 131, 255, 0.45);
+  --accent-tint: color-mix(in srgb, var(--accent) 16%, var(--surface));
+  --warn-tint: color-mix(in srgb, #e3a93b 14%, var(--surface));
   --accent-fg: #0b0f14;
   --warn-soft: rgba(227, 169, 59, 0.12);
   --warn-line: rgba(227, 169, 59, 0.4);
   --danger: #fca5a5;
   --danger-soft: rgba(239, 68, 68, 0.12);
   --danger-line: rgba(239, 68, 68, 0.35);
+  --branch-0: #38bdf8;
+  --branch-1: #2dd4bf;
+  --branch-2: #a78bfa;
+  --branch-3: #fb7185;
+  --branch-4: #a3e635;
+  --branch-5: #fb923c;
   --grid: rgba(255, 255, 255, 0.055);
   --shadow-pop: 0 8px 24px rgba(0, 0, 0, 0.35);
 }
@@ -38,12 +46,20 @@
   --accent: #5b5bd6;
   --accent-soft: rgba(91, 91, 214, 0.1);
   --accent-line: rgba(91, 91, 214, 0.4);
+  --accent-tint: color-mix(in srgb, var(--accent) 12%, var(--surface));
+  --warn-tint: color-mix(in srgb, #c4820a 12%, var(--surface));
   --accent-fg: #ffffff;
   --warn-soft: rgba(196, 130, 10, 0.1);
   --warn-line: rgba(196, 130, 10, 0.4);
   --danger: #b91c1c;
   --danger-soft: rgba(239, 68, 68, 0.08);
   --danger-line: rgba(185, 28, 28, 0.3);
+  --branch-0: #0284c7;
+  --branch-1: #0d9488;
+  --branch-2: #7c3aed;
+  --branch-3: #e11d48;
+  --branch-4: #65a30d;
+  --branch-5: #ea580c;
   --grid: rgba(15, 23, 42, 0.07);
   --shadow-pop: 0 8px 24px rgba(15, 23, 42, 0.1);
 }
@@ -60,6 +76,8 @@
   --color-accent: var(--accent);
   --color-accent-soft: var(--accent-soft);
   --color-accent-line: var(--accent-line);
+  --color-accent-tint: var(--accent-tint);
+  --color-warn-tint: var(--warn-tint);
   --color-accent-fg: var(--accent-fg);
   --color-warn-soft: var(--warn-soft);
   --color-warn-line: var(--warn-line);
@@ -139,4 +157,28 @@ body {
   .loading-bar {
     animation: none;
   }
+}
+
+/* Tons dos balões por nível. A cor do ramo vem da variável --b, definida em cada nó. */
+.tone-1 {
+  background: color-mix(in srgb, var(--b) 18%, var(--surface));
+  border-color: color-mix(in srgb, var(--b) 70%, transparent);
+}
+.tone-1:hover {
+  border-color: var(--b);
+}
+.tone-2 {
+  background: color-mix(in srgb, var(--b) 7%, var(--surface));
+  border-color: color-mix(in srgb, var(--b) 40%, transparent);
+}
+.tone-2:hover {
+  border-color: color-mix(in srgb, var(--b) 75%, transparent);
+}
+.tone-3 {
+  background: var(--surface);
+  border-color: color-mix(in srgb, var(--b) 30%, var(--line));
+  border-style: dashed;
+}
+.tone-3:hover {
+  border-color: color-mix(in srgb, var(--b) 65%, var(--line));
 }
