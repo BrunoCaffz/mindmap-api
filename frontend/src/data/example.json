@@ -1,0 +1,430 @@
+{
+  "id": "ex-068",
+  "title": "Estudando para AWS Cloud Practitioner",
+  "description": "",
+  "type": "ROOT",
+  "children": [
+    {
+      "id": "ex-015",
+      "title": "Conceitos de nuvem",
+      "description": "",
+      "type": "HEADING",
+      "children": [
+        {
+          "id": "ex-004",
+          "title": "Modelos de serviço",
+          "description": "IaaS, PaaS e SaaS mudam o quanto você precisa gerenciar.",
+          "type": "HEADING",
+          "children": [
+            {
+              "id": "ex-001",
+              "title": "IaaS: você cuida do sistema e das aplicações",
+              "description": "",
+              "type": "LIST_ITEM",
+              "children": []
+            },
+            {
+              "id": "ex-002",
+              "title": "PaaS: a plataforma cuida da infraestrutura",
+              "description": "",
+              "type": "LIST_ITEM",
+              "children": []
+            },
+            {
+              "id": "ex-003",
+              "title": "SaaS: o software já vem pronto para usar",
+              "description": "",
+              "type": "LIST_ITEM",
+              "children": []
+            }
+          ]
+        },
+        {
+          "id": "ex-010",
+          "title": "Vantagens da nuvem",
+          "description": "",
+          "type": "HEADING",
+          "children": [
+            {
+              "id": "ex-008",
+              "title": "Elasticidade",
+              "description": "",
+              "type": "LIST_ITEM",
+              "children": [
+                {
+                  "id": "ex-006",
+                  "title": "Cresce no pico de uso",
+                  "description": "",
+                  "type": "LIST_ITEM",
+                  "children": []
+                },
+                {
+                  "id": "ex-007",
+                  "title": "Diminui quando a demanda cai",
+                  "description": "",
+                  "type": "LIST_ITEM",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "id": "ex-009",
+              "title": "Custo variável em vez de investimento inicial",
+              "description": "",
+              "type": "LIST_ITEM",
+              "children": []
+            }
+          ]
+        },
+        {
+          "id": "ex-014",
+          "title": "Regiões e zonas",
+          "description": "Uma região tem várias zonas de disponibilidade.",
+          "type": "HEADING",
+          "children": [
+            {
+              "id": "ex-011",
+              "title": "Região: local geográfico com vários datacenters",
+              "description": "",
+              "type": "LIST_ITEM",
+              "children": []
+            },
+            {
+              "id": "ex-012",
+              "title": "Zona de disponibilidade: datacenters isolados na mesma região",
+              "description": "",
+              "type": "LIST_ITEM",
+              "children": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ex-030",
+      "title": "Segurança e IAM",
+      "description": "",
+      "type": "HEADING",
+      "children": [
+        {
+          "id": "ex-018",
+          "title": "Responsabilidade compartilhada",
+          "description": "> A AWS cuida da segurança DA nuvem.\n> Você cuida da segurança NA nuvem.",
+          "type": "HEADING",
+          "children": [
+            {
+              "id": "ex-016",
+              "title": "AWS: hardware, rede e datacenters",
+              "description": "",
+              "type": "LIST_ITEM",
+              "children": []
+            },
+            {
+              "id": "ex-017",
+              "title": "Cliente: dados, acessos e configuração",
+              "description": "",
+              "type": "LIST_ITEM",
+              "children": []
+            }
+          ]
+        },
+        {
+          "id": "ex-029",
+          "title": "IAM",
+          "description": "Serviço global que controla quem acessa o quê.",
+          "type": "HEADING",
+          "children": [
+            {
+              "id": "ex-021",
+              "title": "Usuários e grupos",
+              "description": "",
+              "type": "HEADING",
+              "children": [
+                {
+                  "id": "ex-019",
+                  "title": "Um usuário pode estar em vários grupos",
+                  "description": "",
+                  "type": "LIST_ITEM",
+                  "children": []
+                },
+                {
+                  "id": "ex-020",
+                  "title": "Grupos não contêm outros grupos",
+                  "description": "",
+                  "type": "LIST_ITEM",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "id": "ex-024",
+              "title": "Políticas",
+              "description": "Uma política define o que pode ser feito, em qual serviço e em qual recurso.\n```json\n{\n  \"Effect\": \"Allow\",\n  \"Action\": \"s3:GetObject\",\n  \"Resource\": \"arn:aws:s3:::bucket-exemplo/*\"\n}\n```\n> Um Deny explícito sempre vence um Allow.",
+              "type": "HEADING",
+              "children": [
+                {
+                  "id": "ex-022",
+                  "title": "Comece com o menor privilégio possível",
+                  "description": "",
+                  "type": "LIST_ITEM",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "id": "ex-028",
+              "title": "Ative MFA na conta root",
+              "description": "",
+              "type": "CALLOUT",
+              "children": [
+                {
+                  "id": "ex-025",
+                  "title": "Use a conta root só para tarefas raras",
+                  "description": "",
+                  "type": "LIST_ITEM",
+                  "children": []
+                },
+                {
+                  "id": "ex-026",
+                  "title": "Crie um usuário administrador para o dia a dia",
+                  "description": "",
+                  "type": "LIST_ITEM",
+                  "children": []
+                },
+                {
+                  "id": "ex-027",
+                  "title": "Guarde o dispositivo de MFA em lugar seguro",
+                  "description": "",
+                  "type": "LIST_ITEM",
+                  "children": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ex-053",
+      "title": "Serviços principais",
+      "description": "",
+      "type": "HEADING",
+      "children": [
+        {
+          "id": "ex-036",
+          "title": "Computação",
+          "description": "",
+          "type": "HEADING",
+          "children": [
+            {
+              "id": "ex-033",
+              "title": "EC2: máquinas virtuais",
+              "description": "",
+              "type": "LIST_ITEM",
+              "children": [
+                {
+                  "id": "ex-031",
+                  "title": "On-Demand, Reserved e Spot",
+                  "description": "",
+                  "type": "LIST_ITEM",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "id": "ex-034",
+              "title": "Lambda: código sem servidor para gerenciar",
+              "description": "",
+              "type": "LIST_ITEM",
+              "children": []
+            }
+          ]
+        },
+        {
+          "id": "ex-042",
+          "title": "Armazenamento",
+          "description": "",
+          "type": "HEADING",
+          "children": [
+            {
+              "id": "ex-039",
+              "title": "S3: objetos guardados em buckets",
+              "description": "",
+              "type": "LIST_ITEM",
+              "children": [
+                {
+                  "id": "ex-037",
+                  "title": "Classes: Standard, Infrequent Access e Glacier",
+                  "description": "",
+                  "type": "LIST_ITEM",
+                  "children": []
+                },
+                {
+                  "id": "ex-038",
+                  "title": "Versionamento protege contra exclusão acidental",
+                  "description": "",
+                  "type": "LIST_ITEM",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "id": "ex-040",
+              "title": "EBS: disco ligado a uma instância EC2",
+              "description": "",
+              "type": "LIST_ITEM",
+              "children": []
+            }
+          ]
+        },
+        {
+          "id": "ex-046",
+          "title": "Banco de dados",
+          "description": "",
+          "type": "HEADING",
+          "children": [
+            {
+              "id": "ex-043",
+              "title": "RDS: bancos relacionais gerenciados",
+              "description": "",
+              "type": "LIST_ITEM",
+              "children": []
+            },
+            {
+              "id": "ex-044",
+              "title": "DynamoDB: NoSQL de chave e valor",
+              "description": "",
+              "type": "LIST_ITEM",
+              "children": []
+            }
+          ]
+        },
+        {
+          "id": "ex-052",
+          "title": "Rede",
+          "description": "",
+          "type": "HEADING",
+          "children": [
+            {
+              "id": "ex-049",
+              "title": "VPC: rede virtual isolada",
+              "description": "",
+              "type": "LIST_ITEM",
+              "children": [
+                {
+                  "id": "ex-047",
+                  "title": "Sub-redes públicas e privadas",
+                  "description": "",
+                  "type": "LIST_ITEM",
+                  "children": []
+                },
+                {
+                  "id": "ex-048",
+                  "title": "Security groups e NACLs filtram o tráfego",
+                  "description": "",
+                  "type": "LIST_ITEM",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "id": "ex-050",
+              "title": "Route 53: DNS",
+              "description": "",
+              "type": "LIST_ITEM",
+              "children": []
+            },
+            {
+              "id": "ex-051",
+              "title": "CloudFront: entrega de conteúdo pela borda",
+              "description": "",
+              "type": "LIST_ITEM",
+              "children": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ex-063",
+      "title": "Custos e suporte",
+      "description": "",
+      "type": "HEADING",
+      "children": [
+        {
+          "id": "ex-057",
+          "title": "Modelo de preços",
+          "description": "",
+          "type": "HEADING",
+          "children": [
+            {
+              "id": "ex-054",
+              "title": "Pague apenas pelo que usar",
+              "description": "",
+              "type": "LIST_ITEM",
+              "children": []
+            },
+            {
+              "id": "ex-055",
+              "title": "Desconto por volume e por compromisso",
+              "description": "",
+              "type": "LIST_ITEM",
+              "children": []
+            }
+          ]
+        },
+        {
+          "id": "ex-061",
+          "title": "Ferramentas de custo",
+          "description": "",
+          "type": "HEADING",
+          "children": [
+            {
+              "id": "ex-058",
+              "title": "Cost Explorer mostra o histórico de gastos",
+              "description": "",
+              "type": "LIST_ITEM",
+              "children": []
+            },
+            {
+              "id": "ex-059",
+              "title": "Budgets avisa quando passa do limite",
+              "description": "",
+              "type": "LIST_ITEM",
+              "children": []
+            }
+          ]
+        },
+        {
+          "id": "ex-062",
+          "title": "Planos de suporte",
+          "description": "Basic, Developer, Business e Enterprise.",
+          "type": "HEADING",
+          "children": []
+        }
+      ]
+    },
+    {
+      "id": "ex-067",
+      "title": "Preparando a prova",
+      "description": "",
+      "type": "HEADING",
+      "children": [
+        {
+          "id": "ex-064",
+          "title": "Faça simulados cronometrados",
+          "description": "",
+          "type": "LIST_ITEM",
+          "children": []
+        },
+        {
+          "id": "ex-065",
+          "title": "Revise as respostas erradas",
+          "description": "",
+          "type": "LIST_ITEM",
+          "children": []
+        }
+      ]
+    }
+  ]
+}

@@ -1,6 +1,15 @@
 import type { MindMapNode } from "@/types/mindmap";
 
+// 32 caracteres hexadecimais, com ou sem hífens (formato dos IDs de página do Notion).
+const PAGE_ID_PATTERN = /^[0-9a-f]{8}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{12}$/i;
+
+export function normalizePageId(value: string): string | null {
+  const trimmed = value.trim();
+  return PAGE_ID_PATTERN.test(trimmed) ? trimmed.replaceAll("-", "").toLowerCase() : null;
+}
+
 function messageForStatus(status: number): string {
+  if (status === 429) return "Muitas tentativas seguidas. Aguarde um pouco e tente de novo.";
   if (status === 400) return "O ID informado não parece válido. Confira se copiou o ID da página inteiro.";
   if (status === 401 || status === 403) {
     return "Sem acesso a essa página. Confira se ela foi compartilhada com a integração do Notion.";

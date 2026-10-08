@@ -7,7 +7,8 @@ import { EmptyMapState } from "@/components/EmptyMapState";
 import { LoadingMap } from "@/components/LoadingMap";
 import { MapSidebar } from "@/components/MapSidebar";
 import { MindMap } from "@/components/MindMap";
-import { fetchMindMap } from "@/lib/api";
+import exampleMap from "@/data/example.json";
+import { fetchMindMap, normalizePageId } from "@/lib/api";
 import type { LayoutMode, Spacing } from "@/lib/layout";
 import { useTheme } from "@/lib/theme";
 import type { MindMapNode } from "@/types/mindmap";
@@ -23,9 +24,18 @@ export default function Home() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [theme, setTheme] = useTheme();
 
+  function handleShowExample() {
+    setError(null);
+    setTree(exampleMap as MindMapNode);
+  }
+
   async function handleSubmit() {
-    const id = pageId.trim();
-    if (!id) return;
+    if (!pageId.trim()) return;
+    const id = normalizePageId(pageId);
+    if (!id) {
+      setError("O ID precisa ter 32 caracteres (letras de a a f e números), como aparece no fim do link da página.");
+      return;
+    }
     setLoading(true);
     setError(null);
     setTree(null);
@@ -80,7 +90,7 @@ export default function Home() {
             ) : tree ? (
               <MindMap tree={tree} mode={mode} spacing={spacing} theme={theme} />
             ) : (
-              <EmptyMapState />
+              <EmptyMapState onShowExample={handleShowExample} />
             )}
           </motion.div>
         </main>
