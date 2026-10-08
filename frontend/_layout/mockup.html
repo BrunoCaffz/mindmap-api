@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mockup: Notion Mindmap</title>
+<style>
+  :root[data-theme="dark"] {
+    --bg: #0b0f14; --surface: #111827; --surface2: #172033;
+    --border: rgba(255,255,255,.08); --border-hi: rgba(255,255,255,.18);
+    --text: #e8ecf2; --muted: #8b95a7; --faint: #8591a6;
+    --accent: #7c83ff; --accent-soft: rgba(124,131,255,.14); --accent-text: #0b0f14;
+    --grid: rgba(255,255,255,.055); --shadow: 0 8px 24px rgba(0,0,0,.35);
+  }
+  :root[data-theme="light"] {
+    --bg: #f6f7f9; --surface: #ffffff; --surface2: #eef0f4;
+    --border: rgba(15,23,42,.10); --border-hi: rgba(15,23,42,.22);
+    --text: #0f172a; --muted: #5b6577; --faint: #66728a;
+    --accent: #5b5bd6; --accent-soft: rgba(91,91,214,.10); --accent-text: #ffffff;
+    --grid: rgba(15,23,42,.07); --shadow: 0 8px 24px rgba(15,23,42,.10);
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #05080c; color: var(--text); font: 14px/1.45 "IBM Plex Sans", system-ui, sans-serif; padding: 24px 16px 64px; }
+  h1 { font-size: 13px; font-weight: 500; color: #8b95a7; margin: 28px auto 10px; max-width: 1280px; letter-spacing: .04em; text-transform: uppercase; }
+  .note { max-width: 1280px; margin: 0 auto 16px; color: #8b95a7; font-size: 13px; }
+  .note b { color: #e8ecf2; font-weight: 500; }
+
+  /* app frame */
+  .app { max-width: 1280px; margin: 0 auto; height: 640px; border: 1px solid var(--border); border-radius: 12px; overflow: hidden;
+         background: var(--bg); display: grid; grid-template-rows: 52px 1fr; }
+  .topbar { display: flex; align-items: center; gap: 14px; padding: 0 14px; background: var(--surface); border-bottom: 1px solid var(--border); }
+  .brand { display: flex; align-items: center; gap: 9px; font-weight: 600; letter-spacing: -.01em; white-space: nowrap; }
+  .mark { width: 24px; height: 24px; border-radius: 7px; background: var(--accent); display: grid; place-items: center; }
+  .mark svg { width: 14px; height: 14px; stroke: var(--accent-text); fill: none; stroke-width: 2; stroke-linecap: round; }
+  .sep { width: 1px; height: 20px; background: var(--border); }
+  .mapname { color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+  .mapname b { color: var(--text); font-weight: 500; }
+  .spacer { flex: 1; }
+  .pageid { display: flex; align-items: center; gap: 8px; height: 34px; padding: 0 10px; width: 330px; max-width: 40vw;
+            background: var(--bg); border: 1px solid var(--border); border-radius: 8px; color: var(--faint); transition: border-color .15s; }
+  .pageid:hover { border-color: var(--border-hi); }
+  .pageid svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 1.8; flex: none; }
+  .pageid span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 13px; }
+  .btn { height: 34px; padding: 0 14px; border-radius: 8px; border: 0; background: var(--accent); color: var(--accent-text);
+         font: 500 13px "IBM Plex Sans", sans-serif; cursor: pointer; transition: transform .12s, filter .15s; white-space: nowrap; }
+  .btn:hover { filter: brightness(1.1); } .btn:active { transform: scale(.97); }
+
+  .body { display: grid; grid-template-columns: 200px 1fr; min-height: 0; }
+  .sidebar { background: var(--surface); border-right: 1px solid var(--border); padding: 14px 12px; display: flex; flex-direction: column; gap: 18px; }
+  .group h3 { margin: 0 0 8px; font-size: 11px; font-weight: 500; letter-spacing: .06em; text-transform: uppercase; color: var(--faint); }
+  .seg { display: flex; flex-direction: column; gap: 2px; }
+  .opt { display: flex; align-items: center; gap: 9px; padding: 7px 9px; border-radius: 7px; color: var(--muted); cursor: pointer; transition: background .15s, color .15s; }
+  .opt:hover { background: var(--surface2); color: var(--text); }
+  .opt.on { background: var(--accent-soft); color: var(--text); }
+  .opt i { width: 8px; height: 8px; border-radius: 50%; border: 1.5px solid var(--faint); flex: none; }
+  .opt.on i { border-color: var(--accent); background: var(--accent); }
+  .grow { flex: 1; }
+  .theme { display: flex; gap: 2px; padding: 3px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; }
+  .theme button { flex: 1; border: 0; background: none; color: var(--muted); padding: 5px 0; border-radius: 6px; font: 500 12px "IBM Plex Sans", sans-serif; cursor: pointer; }
+  .theme button.on { background: var(--surface2); color: var(--text); }
+
+  /* canvas */
+  .canvas { position: relative; overflow: hidden; background-color: var(--bg);
+            background-image: radial-gradient(var(--grid) 1.2px, transparent 1.2px); background-size: 22px 22px; }
+  .stage { position: absolute; left: 36px; top: 20px; width: 1120px; height: 560px; }
+  .stage svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .stage path { fill: none; stroke: var(--faint); stroke-width: 1.4; opacity: .7; }
+  .n { position: absolute; display: flex; align-items: center; gap: 8px; padding: 0 12px; border-radius: 10px; border: 1px solid var(--border);
+       background: var(--surface); color: var(--text); transition: border-color .15s, box-shadow .15s, transform .15s; cursor: pointer; }
+  .n:hover { border-color: var(--border-hi); }
+  .n .t { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+  .n .ic { width: 16px; height: 16px; flex: none; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; opacity: .8; }
+  .n .tg { position: absolute; right: -11px; top: 50%; margin-top: -10px; width: 20px; height: 20px; border-radius: 50%; border: 1px solid var(--border-hi);
+           background: var(--surface2); color: var(--muted); display: grid; place-items: center; font-size: 12px; line-height: 1; }
+  .l0 { width: 240px; height: 72px; background: var(--accent); border-color: transparent; color: var(--accent-text); font-size: 17px; font-weight: 600; letter-spacing: -.01em; box-shadow: var(--shadow); }
+  .l0:hover { border-color: transparent; filter: brightness(1.08); }
+  .l1 { width: 220px; height: 64px; background: var(--accent-soft); border-color: color-mix(in srgb, var(--accent) 45%, transparent); font-weight: 500; font-size: 14px; }
+  .l2 { width: 210px; height: 52px; background: var(--surface); font-size: 13px; }
+  .l3 { width: 180px; height: 40px; background: var(--surface); color: var(--muted); font-size: 12px; border-style: dashed; }
+  .sel { border-color: var(--accent) !important; box-shadow: 0 0 0 3px var(--accent-soft), 0 6px 20px rgba(0,0,0,.25); }
+  .callout { background: color-mix(in srgb, #e3a93b 12%, var(--surface)); border-color: color-mix(in srgb, #e3a93b 40%, transparent); }
+
+  /* detail panel */
+  .panel { position: absolute; right: 0; top: 0; bottom: 0; width: 320px; background: var(--surface); border-left: 1px solid var(--border); box-shadow: var(--shadow); padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+  .panel h2 { margin: 0; font-size: 15px; font-weight: 600; }
+  .badge { align-self: flex-start; font-size: 11px; padding: 2px 8px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); font-weight: 500; }
+  .panel p { margin: 0; color: var(--muted); }
+  .panel pre { margin: 0; padding: 10px; border-radius: 8px; background: var(--bg); border: 1px solid var(--border); font: 12px "IBM Plex Mono", monospace; color: var(--text); }
+  .panel blockquote { margin: 0; padding: 8px 10px; border-radius: 8px; background: var(--surface2); color: var(--muted); font-style: italic; }
+  .ctrl { position: absolute; left: 12px; bottom: 12px; display: flex; flex-direction: column; border: 1px solid var(--border); border-radius: 9px; background: var(--surface); overflow: hidden; box-shadow: var(--shadow); }
+  .ctrl span { width: 30px; height: 30px; display: grid; place-items: center; color: var(--muted); border-bottom: 1px solid var(--border); }
+  .ctrl span:last-child { border: 0; }
+  .mini { position: absolute; right: 336px; bottom: 12px; width: 150px; height: 96px; border: 1px solid var(--border); border-radius: 9px; background: var(--surface); box-shadow: var(--shadow); overflow: hidden; }
+  .mini i { position: absolute; background: var(--faint); border-radius: 2px; opacity: .7; }
+  .mini i.a { background: var(--accent); opacity: 1; }
+  .mini b { position: absolute; inset: 14px 22px 12px 8px; border: 1.5px solid var(--accent); border-radius: 3px; background: var(--accent-soft); }
+
+  /* states */
+  .states { max-width: 1280px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr 375px; gap: 16px; align-items: start; }
+  .card { height: 300px; border: 1px solid var(--border); border-radius: 12px; background-color: var(--bg); background-image: radial-gradient(var(--grid) 1.2px, transparent 1.2px); background-size: 22px 22px;
+          display: grid; place-items: center; padding: 20px; text-align: center; color: var(--text); }
+  .empty .ico { width: 52px; height: 52px; margin: 0 auto 14px; border-radius: 14px; background: var(--accent-soft); display: grid; place-items: center; }
+  .empty .ico svg { width: 26px; height: 26px; stroke: var(--accent); fill: none; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+  .empty h2 { margin: 0 0 6px; font-size: 18px; font-weight: 600; letter-spacing: -.01em; }
+  .empty p { margin: 0 auto 16px; max-width: 320px; color: var(--muted); }
+  .steps { text-align: left; display: flex; flex-direction: column; gap: 10px; }
+  .steps div { display: flex; align-items: center; gap: 10px; color: var(--faint); }
+  .steps .done { color: var(--muted); } .steps .cur { color: var(--text); font-weight: 500; }
+  .steps .d { width: 16px; height: 16px; display: grid; place-items: center; font-size: 11px; }
+  .spin { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--border-hi); border-top-color: var(--accent); animation: sp .8s linear infinite; }
+  @keyframes sp { to { transform: rotate(360deg); } }
+  .bar { height: 3px; width: 200px; margin-top: 18px; border-radius: 2px; background: var(--surface2); overflow: hidden; position: relative; }
+  .bar::after { content: ""; position: absolute; inset: 0; width: 40%; background: var(--accent); border-radius: 2px; animation: ind 1.3s ease-in-out infinite; }
+  @keyframes ind { from { transform: translateX(-100%); } to { transform: translateX(260%); } }
+
+  /* mobile frame */
+  .phone { height: 600px; border: 1px solid var(--border); border-radius: 18px; overflow: hidden; background: var(--bg); display: flex; flex-direction: column; }
+  .phone .topbar { height: 48px; padding: 0 12px; flex: none; }
+  .phone .row2 { display: flex; gap: 8px; padding: 10px 12px; background: var(--surface); border-bottom: 1px solid var(--border); }
+  .phone .row2 .pageid { flex: 1; width: auto; max-width: none; }
+  .phone .canvas { flex: 1; }
+  .burger { width: 32px; height: 32px; border-radius: 8px; border: 1px solid var(--border); display: grid; place-items: center; color: var(--muted); }
+  @media (max-width: 1000px) { .states { grid-template-columns: 1fr; } .body { grid-template-columns: 1fr; } .sidebar { display: none; } .panel { width: 260px; } .mini { display: none; } }
+  @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+</style>
+</head>
+<body>
+
+<p class="note"><b>Mockup estático.</b> Use os botões Escuro e Claro na sidebar para ver os dois temas. Nada aqui é o app: é só a proposta visual para aprovação.</p>
+
+<h1>Desktop 1440, mapa carregado, node selecionado</h1>
+<div class="app">
+  <header class="topbar">
+    <div class="brand"><div class="mark"><svg viewBox="0 0 24 24"><circle cx="6" cy="12" r="2.2"/><circle cx="18" cy="6" r="2.2"/><circle cx="18" cy="18" r="2.2"/><path d="M8 12h3c3 0 3-6 7-6M11 12c3 0 3 6 7 6"/></svg></div>Notion Mindmap</div>
+    <div class="sep"></div>
+    <div class="mapname">Mapa: <b>SOLID Principles</b></div>
+    <div class="spacer"></div>
+    <div class="pageid"><svg viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/></svg><span>3d6034c387838010b250c1cca4202881</span></div>
+    <button class="btn">Gerar mapa</button>
+  </header>
+
+  <div class="body">
+    <aside class="sidebar">
+      <div class="group"><h3>Layout</h3>
+        <div class="seg"><div class="opt on"><i></i>Mind Map</div><div class="opt"><i></i>Tree</div></div></div>
+      <div class="group"><h3>Espaçamento</h3>
+        <div class="seg"><div class="opt"><i></i>Compacto</div><div class="opt on"><i></i>Normal</div><div class="opt"><i></i>Amplo</div></div></div>
+      <div class="grow"></div>
+      <div class="group"><h3>Tema</h3>
+        <div class="theme"><button data-t="dark" class="on">Escuro</button><button data-t="light">Claro</button></div></div>
+    </aside>
+
+    <main class="canvas">
+      <div class="stage">
+        <svg viewBox="0 0 1120 560">
+          <path d="M260 280C300 280 300 122 340 122"/><path d="M260 280C300 280 300 280 340 280"/><path d="M260 280C300 280 300 438 340 438"/>
+          <path d="M560 122C600 122 600 84 640 84"/><path d="M560 122C600 122 600 150 640 150"/>
+          <path d="M560 280C600 280 600 240 640 240"/><path d="M560 280C600 280 600 312 640 312"/>
+          <path d="M560 438C600 438 600 412 640 412"/><path d="M560 438C600 438 600 478 640 478"/>
+          <path d="M850 84C870 84 870 84 890 84"/><path d="M850 240C870 240 870 240 890 240"/>
+        </svg>
+        <div class="n l0" style="left:20px;top:244px"><span class="t">SOLID Principles</span><span class="tg">−</span></div>
+        <div class="n l1" style="left:340px;top:90px"><span class="t">S: Single Responsibility</span><span class="tg">−</span></div>
+        <div class="n l1 sel" style="left:340px;top:248px"><span class="t">O: Open/Closed</span><span class="tg">−</span></div>
+        <div class="n l1" style="left:340px;top:406px"><span class="t">L: Liskov Substitution</span><span class="tg">−</span></div>
+        <div class="n l2" style="left:640px;top:58px"><span class="t">Uma classe, um motivo para mudar</span><span class="tg">−</span></div>
+        <div class="n l2" style="left:640px;top:124px"><span class="t">Separe regra de negócio de persistência</span></div>
+        <div class="n l2" style="left:640px;top:214px"><span class="t">Aberto para extensão</span><span class="tg">−</span></div>
+        <div class="n l2 callout" style="left:640px;top:286px"><svg class="ic" viewBox="0 0 24 24"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-4 10.5c.7.7 1 1.5 1 2.5h6c0-1 .3-1.8 1-2.5A6 6 0 0 0 12 3z"/></svg><span class="t">Fechado para modificação</span></div>
+        <div class="n l2" style="left:640px;top:386px"><span class="t">Subtipos substituem o tipo base</span></div>
+        <div class="n l2" style="left:640px;top:452px"><span class="t">Não fortaleça pré-condições na subclasse</span></div>
+        <div class="n l3" style="left:890px;top:64px"><span class="t">Exemplo: classe Fatura</span></div>
+        <div class="n l3" style="left:890px;top:220px"><span class="t">Exemplo: novo tipo de desconto</span></div>
+      </div>
+
+      <div class="ctrl"><span>+</span><span>−</span><span>⤢</span></div>
+      <div class="mini"><i style="left:12px;top:42px;width:18px;height:8px" class="a"></i><i style="left:40px;top:20px;width:16px;height:6px"></i><i style="left:40px;top:44px;width:16px;height:6px" class="a"></i><i style="left:40px;top:68px;width:16px;height:6px"></i><i style="left:66px;top:12px;width:16px;height:5px"></i><i style="left:66px;top:24px;width:16px;height:5px"></i><i style="left:66px;top:38px;width:16px;height:5px"></i><i style="left:66px;top:52px;width:16px;height:5px"></i><i style="left:66px;top:66px;width:16px;height:5px"></i><i style="left:66px;top:78px;width:16px;height:5px"></i><b></b></div>
+
+      <aside class="panel">
+        <span class="badge">Nível 1 · Título</span>
+        <h2>O: Open/Closed</h2>
+        <p>Entidades de software devem estar abertas para extensão, mas fechadas para modificação.</p>
+        <pre>interface Desconto {
+  double aplicar(double valor);
+}</pre>
+        <blockquote>Adicionar um novo desconto não deve exigir mexer na classe Pedido.</blockquote>
+      </aside>
+    </main>
+  </div>
+</div>
+
+<h1>Estados: vazio, carregando e mobile 375</h1>
+<div class="states">
+  <div class="card empty"><div>
+    <div class="ico"><svg viewBox="0 0 24 24"><circle cx="6" cy="12" r="2.2"/><circle cx="18" cy="6" r="2.2"/><circle cx="18" cy="18" r="2.2"/><path d="M8 12h3c3 0 3-6 7-6M11 12c3 0 3 6 7 6"/></svg></div>
+    <h2>Seu Notion em forma de mapa</h2>
+    <p>Cole o ID de uma página no campo acima e clique em Gerar mapa. A página precisa estar compartilhada com a integração.</p>
+    <button class="btn">Gerar mapa</button>
+  </div></div>
+
+  <div class="card"><div>
+    <div class="steps">
+      <div class="done"><span class="d">✓</span>Lendo página do Notion...</div>
+      <div class="done"><span class="d">✓</span>Analisando conteúdo...</div>
+      <div class="cur"><span class="d"><span class="spin"></span></span>Organizando tópicos...</div>
+      <div><span class="d">○</span>Criando mapa...</div>
+      <div><span class="d">○</span>Finalizando...</div>
+    </div>
+    <div class="bar" style="margin-inline:auto"></div>
+  </div></div>
+
+  <div class="phone">
+    <header class="topbar"><div class="brand"><div class="mark"><svg viewBox="0 0 24 24"><circle cx="6" cy="12" r="2.2"/><circle cx="18" cy="6" r="2.2"/><circle cx="18" cy="18" r="2.2"/><path d="M8 12h3c3 0 3-6 7-6M11 12c3 0 3 6 7 6"/></svg></div></div>
+      <div class="mapname"><b>SOLID Principles</b></div><div class="spacer"></div><div class="burger">☰</div></header>
+    <div class="row2"><div class="pageid"><span>3d6034c387838010b2...</span></div><button class="btn">Gerar</button></div>
+    <div class="canvas"><div class="stage" style="left:10px;top:30px;transform:scale(.55);transform-origin:0 0">
+      <svg viewBox="0 0 1120 560"><path d="M260 280C300 280 300 122 340 122"/><path d="M260 280C300 280 300 280 340 280"/><path d="M260 280C300 280 300 438 340 438"/></svg>
+      <div class="n l0" style="left:20px;top:244px"><span class="t">SOLID Principles</span></div>
+      <div class="n l1" style="left:340px;top:90px"><span class="t">S: Single Responsibility</span></div>
+      <div class="n l1 sel" style="left:340px;top:248px"><span class="t">O: Open/Closed</span></div>
+      <div class="n l1" style="left:340px;top:406px"><span class="t">L: Liskov Substitution</span></div></div></div>
+  </div>
+</div>
+
+<script>
+  document.querySelectorAll('.theme button').forEach(b => b.addEventListener('click', () => {
+    document.documentElement.dataset.theme = b.dataset.t;
+    document.querySelectorAll('.theme button').forEach(x => x.classList.toggle('on', x === b));
+  }));
+</script>
+</body>
+</html>
