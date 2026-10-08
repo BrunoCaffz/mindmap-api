@@ -98,6 +98,7 @@ public class NotionBlockParser {
     private record Entry(int level, Builder node) {
     }
 
+    // versão mutável usada durante a leitura, e o build() no final converte tudo em records imutáveis.
     private static class Builder {
         final String title;
         final NodeType type;

@@ -1,7 +1,6 @@
 package io.github.brunocaffz.mindmap_api.notion.client;
 
 import io.github.brunocaffz.mindmap_api.notion.config.NotionProperties;
-import io.github.brunocaffz.mindmap_api.notion.mapper.NotionBlockParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -36,7 +35,7 @@ public class NotionClient {
 
     public String getPageTitle(String pageId) {
         JsonNode page = http.get().uri("/pages/{id}", pageId)
-                .retrieve().body(JsonNode.class);
+                .retrieve().body(JsonNode.class); // pega a resposta e a converte em JsonNode, a árvore de JSON do Jackson.
 
         for (JsonNode prop : page.path("properties")) {
             if ("title".equals(prop.path("type").asText())) {

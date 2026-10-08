@@ -4,6 +4,7 @@ import io.github.brunocaffz.mindmap_api.enums.NodeType;
 import io.github.brunocaffz.mindmap_api.records.MindMapNode;
 import org.springframework.stereotype.Component;
 
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -124,7 +125,7 @@ public class NotionMarkdownParser {
                     container().appendDescription(clean(line));
                 }
             }
-            return root.build();
+            return root.build("root");
         }
 
         private Builder container() {
@@ -155,7 +156,10 @@ public class NotionMarkdownParser {
         final List<Builder> children = new ArrayList<>();
         private final StringBuilder description = new StringBuilder();
 
-        Builder(String title, NodeType type) { this.title = title; this.type = type; }
+        Builder(String title, NodeType type) {
+            this.title = title;
+            this.type = type;
+        }
 
         void appendDescription(String text) {
             if (text.isBlank()) return;
@@ -163,9 +167,17 @@ public class NotionMarkdownParser {
             description.append(text);
         }
 
-        MindMapNode build() {
-            return new MindMapNode(UUID.randomUUID(), title, description.toString(), type,
-                    children.stream().map(Builder::build).toList());
+        MindMapNode build(String key) {
+            UUID id = UUID.nameUUIDFromBytes(key.getBytes(StandardCharsets.UTF_8));
+
+            Map<String, Integer> seen = new HashMap<>();
+            List<MindMapNode> built = new ArrayList<>();
+            for (Builder child : children) {
+                String base = key + "/" + child.type + ":" + child.title;
+                int n = seen.merge(base, 1, Integer::sum);   // conta repetidos entre irmãos
+                built.add(child.build(base + "#" + n));
+            }
+            return new MindMapNode(id, title, description.toString(), type, built);
         }
     }
 }

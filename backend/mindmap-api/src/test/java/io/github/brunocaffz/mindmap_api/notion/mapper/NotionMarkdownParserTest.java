@@ -64,4 +64,16 @@ public class NotionMarkdownParserTest {
         assertEquals("Política", permissoes.children().get(0).title());
         assertEquals("Outra seção", root.children().get(1).title());
     }
+
+    @Test
+    void idsAreStableAcrossParses() {
+        String md = "## A\n- item\n## B\n";
+        NotionMarkdownParser parser = new NotionMarkdownParser();
+
+        MindMapNode first = parser.parse("T", md);
+        MindMapNode second = parser.parse("T", md);
+
+        assertEquals(first.id(), second.id());
+        assertEquals(first.children().get(0).id(), second.children().get(0).id());
+    }
 }
