@@ -1,0 +1,12 @@
+title = "notion-mindmap"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Pastas geradas por build, ignoradas pelo Git"
+paths = [
+    '''(^|/)\.next/''',
+    '''(^|/)node_modules/''',
+    '''(^|/)target/''',
+]
