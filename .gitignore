@@ -1,4 +1,4 @@
    .idea/
    .env
    node_modules/
-   .next/
+   .next/frontend/.claude/settings.local.json
