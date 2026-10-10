@@ -52,10 +52,21 @@ animações com `framer-motion`. Sem biblioteca de estado global.
 - `title` pode ser longo (às vezes uma frase inteira). Pode estar vazio em casos raros.
 - Os ids são estáveis entre chamadas para o mesmo conteúdo.
 - `pageId`: 32 caracteres hexadecimais, com ou sem hífens. É validado antes de enviar.
+- Erros chegam em `application/problem+json` com `title` e `detail` (português, prontos para exibir):
+  400 (ID inválido), 404 (não encontrada ou sem acesso), 429 (limite do Notion, com `Retry-After`),
+  502 e 504 (falha do Notion). A tela mostra o `detail` como texto. Se a resposta não for JSON, usa uma
+  mensagem genérica pelo status. No 429 mostra o `Retry-After` e nunca repete a requisição sozinha.
+  Sem resposta do backend (ou 500 em texto puro, que é o proxy do Next sem alcançar o backend), mostra
+  "Não consegui falar com o servidor.".
 
 ## Layout e UX
 - Topbar com o campo do Page ID e "Gerar mapa", sidebar com layout, espaçamento e tema, mapa ocupando
   o resto. Na tela vazia, "Ver exemplo" carrega `src/data/example.json` (mapa fictício, sem backend).
+- Modo demonstração: com `NEXT_PUBLIC_DEMO_MODE=true` (definida no build, ex.: `NEXT_PUBLIC_DEMO_MODE=true npm run build`)
+  o campo de ID e o botão somem, o exemplo carrega sozinho sem chamar o backend, uma faixa avisa que
+  os dados são fictícios (com link para o repositório, em `src/lib/demo.ts`) e o `next.config` não
+  configura o rewrite de `/api`. Sem a variável, tudo funciona normalmente. A variável é pública por
+  natureza: nada sensível nela.
 - Quatro layouts, escolhidos na sidebar. Todos testados com a página de exemplo:
   - **Mind Map:** esquerda para direita (dagre). O mais estável e o padrão.
   - **Tree:** de cima para baixo (dagre). Largo quando há muitos irmãos.
@@ -102,10 +113,10 @@ src/components/MapToolbar.tsx  (expandir tudo, recolher tudo, níveis)
 src/components/MapNode.tsx     (balão)
 src/components/BubbleNode.tsx  (bolha)
 src/components/DetailPanel.tsx
-src/components/EmptyMapState.tsx, LoadingMap.tsx, icons.tsx
+src/components/EmptyMapState.tsx, LoadingMap.tsx, DemoBanner.tsx, icons.tsx
 src/lib/api.ts                 (fetch tipado e validação do pageId)
 src/lib/layout.ts              (árvore para nodes e edges: dagre, radial, bolhas)
-src/lib/tree.ts, view.ts, theme.ts
+src/lib/tree.ts, view.ts, theme.ts, demo.ts
 src/data/example.json          (mapa fictício de exemplo)
 src/types/mindmap.ts           (tipo MindMapNode)
 ```

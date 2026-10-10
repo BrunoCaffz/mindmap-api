@@ -3,12 +3,14 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { AppHeader } from "@/components/AppHeader";
+import { DemoBanner } from "@/components/DemoBanner";
 import { EmptyMapState } from "@/components/EmptyMapState";
 import { LoadingMap } from "@/components/LoadingMap";
 import { MapSidebar } from "@/components/MapSidebar";
 import { MindMap } from "@/components/MindMap";
 import exampleMap from "@/data/example.json";
 import { fetchMindMap, normalizePageId } from "@/lib/api";
+import { DEMO_MODE } from "@/lib/demo";
 import type { LayoutMode, Spacing } from "@/lib/layout";
 import { useTheme } from "@/lib/theme";
 import type { MindMapNode } from "@/types/mindmap";
@@ -17,7 +19,8 @@ export default function Home() {
   const [pageId, setPageId] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [tree, setTree] = useState<MindMapNode | null>(null);
+  // Na demonstração o mapa de exemplo já nasce carregado, sem chamar o backend.
+  const [tree, setTree] = useState<MindMapNode | null>(DEMO_MODE ? (exampleMap as MindMapNode) : null);
 
   const [mode, setMode] = useState<LayoutMode>("mindmap");
   const [spacing, setSpacing] = useState<Spacing>("normal");
@@ -55,9 +58,11 @@ export default function Home() {
         onPageIdChange={setPageId}
         onSubmit={handleSubmit}
         loading={loading}
+        hideInput={DEMO_MODE}
         mapTitle={tree?.title}
         onToggleSidebar={() => setSidebarOpen((open) => !open)}
       />
+      {DEMO_MODE && <DemoBanner />}
       {error && (
         <p
           role="alert"
