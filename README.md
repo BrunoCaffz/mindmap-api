@@ -4,7 +4,7 @@ Cole o ID de uma página do Notion e veja ela virar um mapa mental que dá pra n
 
 ![Mapa gerado a partir de uma página de anotações](docs/img/mindmap-image.jpeg)
 
-**Demo:** (link da demo, depois do deploy). A demo pública roda só com um mapa de exemplo, sem backend. Pra usar com as suas páginas, rode localmente (instruções abaixo).
+**Demo:** mindmap-notion.vercel.app
 
 ## O que já faz
 
