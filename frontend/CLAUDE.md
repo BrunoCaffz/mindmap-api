@@ -7,7 +7,7 @@ O frontend só pede a árvore pronta e a desenha.
 ## Stack
 Next.js (App Router), TypeScript, Tailwind CSS, React Flow (`@xyflow/react`),
 layout em árvore com dagre (`@dagrejs/dagre`), layout de bolhas com `d3-force`,
-animações com `framer-motion`. Sem biblioteca de estado global.
+animações com `framer-motion`, exportação de imagem com `html-to-image`. Sem biblioteca de estado global.
 
 ## Regras
 - O frontend fala SOMENTE com o nosso backend, via `/api/...`. Nunca chame a API do Notion.
@@ -19,8 +19,8 @@ animações com `framer-motion`. Sem biblioteca de estado global.
 - O formato do JSON é o contrato abaixo. Não invente campos. Se algo faltar, avise em vez de supor.
 - Não modifique o conteúdo vindo da API. `title` e `description` são sempre texto, nunca HTML
   (ver a skill `security` em `.claude/skills/security`).
-- Escopo do MVP: UMA tela. Sem login, sem edição, sem salvar, sem exportar. Não adicione bibliotecas
-  além das listadas sem perguntar.
+- Escopo do MVP: UMA tela. Sem login, sem edição, sem salvar. A única exportação é a imagem do mapa
+  (PNG e SVG), feita no navegador. Não adicione bibliotecas além das listadas sem perguntar.
 - Código simples e legível. Componentes pequenos. Tipos TypeScript explícitos.
 
 ## API
@@ -97,6 +97,13 @@ animações com `framer-motion`. Sem biblioteca de estado global.
   primeiro. Enter e seta para baixo vão ao próximo, Shift+Enter e seta para cima voltam, Esc limpa.
 - Zoom semântico: abaixo de `SEMANTIC_ZOOM` o nó mostra só o título e o botão de recolher (sem bolinha,
   ícone nem número do contador).
+- Exportar imagem: "Baixar PNG" e "Baixar SVG" na sidebar (`src/hooks/useExportImage.ts`). Exporta o mapa
+  inteiro, não só a área visível, do jeito que está na tela (ramos recolhidos continuam recolhidos), com o
+  fundo do tema ativo e sem minimapa, controles, busca nem barra de níveis. O PNG sai em 2x e a escala
+  cai sozinha em mapas muito grandes (máx. 16000 px de lado e 40 milhões de pixels). O nome do arquivo
+  vem do título do mapa, sanitizado em `src/lib/filename.ts` (só `[a-z0-9-]`, fallback `mindmap`). Funciona
+  nos quatro layouts e no modo demonstração. Não chama o backend; a primeira exportação relê as fontes do
+  próprio site (mesma origem) para embuti-las na imagem, e sem isso os títulos saem cortados.
 - Zoom, pan e minimapa do React Flow habilitados.
 - Loading com etapas visuais ("Lendo página do Notion...", "Analisando conteúdo...",
   "Organizando tópicos...", "Criando mapa...", "Finalizando..."). Trocam por tempo, pois é uma
@@ -113,10 +120,11 @@ src/components/MapToolbar.tsx  (expandir tudo, recolher tudo, níveis)
 src/components/MapNode.tsx     (balão)
 src/components/BubbleNode.tsx  (bolha)
 src/components/DetailPanel.tsx
-src/components/EmptyMapState.tsx, LoadingMap.tsx, DemoBanner.tsx, icons.tsx
+src/components/EmptyMapState.tsx, LoadingMap.tsx, DemoBanner.tsx, ExportButtons.tsx, icons.tsx
 src/lib/api.ts                 (fetch tipado e validação do pageId)
 src/lib/layout.ts              (árvore para nodes e edges: dagre, radial, bolhas)
-src/lib/tree.ts, view.ts, theme.ts, demo.ts
+src/lib/tree.ts, view.ts, theme.ts, demo.ts, filename.ts, exportSize.ts, exportSvg.ts
+src/hooks/useExportImage.ts    (gera e baixa o PNG ou o SVG)
 src/data/example.json          (mapa fictício de exemplo)
 src/types/mindmap.ts           (tipo MindMapNode)
 ```

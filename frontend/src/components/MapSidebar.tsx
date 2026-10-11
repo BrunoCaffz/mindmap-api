@@ -1,5 +1,6 @@
 import type { LayoutMode, Spacing } from "@/lib/layout";
 import type { Theme } from "@/lib/theme";
+import { ExportButtons } from "./ExportButtons";
 
 interface OptionProps {
   label: string;
@@ -43,9 +44,21 @@ interface MapSidebarProps {
   onSpacingChange: (spacing: Spacing) => void;
   theme: Theme;
   onThemeChange: (theme: Theme) => void;
+  // Título do mapa (vira o nome do arquivo exportado) e se já existe um mapa para exportar.
+  mapTitle?: string;
+  canExport: boolean;
 }
 
-export function MapSidebar({ mode, onModeChange, spacing, onSpacingChange, theme, onThemeChange }: MapSidebarProps) {
+export function MapSidebar({
+  mode,
+  onModeChange,
+  spacing,
+  onSpacingChange,
+  theme,
+  onThemeChange,
+  mapTitle,
+  canExport,
+}: MapSidebarProps) {
   return (
     <aside className="hidden w-[200px] flex-none flex-col gap-5 border-r border-line bg-surface p-3 md:flex">
       <Group title="Layout">
@@ -61,7 +74,11 @@ export function MapSidebar({ mode, onModeChange, spacing, onSpacingChange, theme
         <Option label="Amplo" active={spacing === "wide"} onSelect={() => onSpacingChange("wide")} />
       </Group>
 
-      <div className="mt-auto">
+      <div className="mt-auto flex flex-col gap-5">
+        <Group title="Exportar">
+          <ExportButtons title={mapTitle} disabled={!canExport} />
+        </Group>
+
         <Group title="Tema">
           <div className="flex gap-0.5 rounded-lg border border-line bg-bg p-[3px]">
             {(["dark", "light"] as const).map((t) => (

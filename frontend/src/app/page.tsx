@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { ReactFlowProvider } from "@xyflow/react";
 import { motion } from "framer-motion";
 import { AppHeader } from "@/components/AppHeader";
 import { DemoBanner } from "@/components/DemoBanner";
@@ -21,6 +22,8 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   // Na demonstração o mapa de exemplo já nasce carregado, sem chamar o backend.
   const [tree, setTree] = useState<MindMapNode | null>(DEMO_MODE ? (exampleMap as MindMapNode) : null);
+  // Muda a cada mapa novo: o provider do React Flow recomeça limpo (sem viewport nem nós do mapa anterior).
+  const [mapSeq, setMapSeq] = useState(0);
 
   const [mode, setMode] = useState<LayoutMode>("mindmap");
   const [spacing, setSpacing] = useState<Spacing>("normal");
@@ -29,6 +32,7 @@ export default function Home() {
 
   function handleShowExample() {
     setError(null);
+    setMapSeq((n) => n + 1);
     setTree(exampleMap as MindMapNode);
   }
 
@@ -43,7 +47,9 @@ export default function Home() {
     setError(null);
     setTree(null);
     try {
-      setTree(await fetchMindMap(id));
+      const loaded = await fetchMindMap(id);
+      setMapSeq((n) => n + 1);
+      setTree(loaded);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erro desconhecido.");
     } finally {
@@ -71,35 +77,39 @@ export default function Home() {
           {error}
         </p>
       )}
-      <div className="flex min-h-0 flex-1">
-        {sidebarOpen && (
-          <MapSidebar
-            mode={mode}
-            onModeChange={setMode}
-            spacing={spacing}
-            onSpacingChange={setSpacing}
-            theme={theme}
-            onThemeChange={setTheme}
-          />
-        )}
-        <main className="min-w-0 flex-1 bg-bg">
-          <motion.div
-            key={loading ? "loading" : tree ? "map" : "empty"}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.25 }}
-            className="h-full"
-          >
-            {loading ? (
-              <LoadingMap />
-            ) : tree ? (
-              <MindMap tree={tree} mode={mode} spacing={spacing} theme={theme} />
-            ) : (
-              <EmptyMapState onShowExample={handleShowExample} />
-            )}
-          </motion.div>
-        </main>
-      </div>
+      <ReactFlowProvider key={mapSeq}>
+        <div className="flex min-h-0 flex-1">
+          {sidebarOpen && (
+            <MapSidebar
+              mode={mode}
+              onModeChange={setMode}
+              spacing={spacing}
+              onSpacingChange={setSpacing}
+              theme={theme}
+              onThemeChange={setTheme}
+              mapTitle={tree?.title}
+              canExport={tree !== null}
+            />
+          )}
+          <main className="min-w-0 flex-1 bg-bg">
+            <motion.div
+              key={loading ? "loading" : tree ? "map" : "empty"}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.25 }}
+              className="h-full"
+            >
+              {loading ? (
+                <LoadingMap />
+              ) : tree ? (
+                <MindMap tree={tree} mode={mode} spacing={spacing} theme={theme} />
+              ) : (
+                <EmptyMapState onShowExample={handleShowExample} />
+              )}
+            </motion.div>
+          </main>
+        </div>
+      </ReactFlowProvider>
     </div>
   );
 }

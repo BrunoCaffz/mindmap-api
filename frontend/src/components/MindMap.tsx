@@ -8,7 +8,6 @@ import {
   MiniMap,
   Panel,
   ReactFlow,
-  ReactFlowProvider,
   getNodesBounds,
   useReactFlow,
   useStoreApi,
@@ -86,7 +85,7 @@ interface MindMapProps {
   theme: Theme;
 }
 
-function MindMapCanvas({ tree, mode, spacing, theme }: MindMapProps) {
+export function MindMap({ tree, mode, spacing, theme }: MindMapProps) {
   const [collapsedIds, setCollapsedIds] = useState<ReadonlySet<string>>(() =>
     collapsedForDepth(tree, INITIAL_DEPTH),
   );
@@ -358,13 +357,5 @@ function MindMapCanvas({ tree, mode, spacing, theme }: MindMapProps) {
         </AnimatePresence>
       </div>
     </MotionConfig>
-  );
-}
-
-export function MindMap(props: MindMapProps) {
-  return (
-    <ReactFlowProvider>
-      <MindMapCanvas {...props} />
-    </ReactFlowProvider>
   );
 }
