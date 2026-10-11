@@ -1,3 +1,4 @@
+import { SESSION_EXPIRED_MESSAGE } from "@/lib/auth";
 import type { MindMapNode } from "@/types/mindmap";
 
 // 32 caracteres hexadecimais, com ou sem hífens (formato dos IDs de página do Notion).
@@ -6,6 +7,14 @@ const PAGE_ID_PATTERN = /^[0-9a-f]{8}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0
 export function normalizePageId(value: string): string | null {
   const trimmed = value.trim();
   return PAGE_ID_PATTERN.test(trimmed) ? trimmed.replaceAll("-", "").toLowerCase() : null;
+}
+
+// 401 em /api/mindmaps: a sessão acabou. Quem chama mostra o aviso com o botão de login.
+export class SessionExpiredError extends Error {
+  constructor() {
+    super(SESSION_EXPIRED_MESSAGE);
+    this.name = "SessionExpiredError";
+  }
 }
 
 const UNREACHABLE_MESSAGE = "Não consegui falar com o servidor.";
@@ -17,7 +26,7 @@ const MAX_DETAIL_LENGTH = 300;
 // um 500 em texto puro é o proxy do Next avisando que não alcançou o backend.
 function genericMessage(status: number, answered: boolean): string {
   if (status === 400) return "O ID informado não parece válido. Confira se copiou o ID da página inteiro.";
-  if (status === 401 || status === 403) return "Sem acesso a essa página.";
+  if (status === 403) return "Sem acesso a essa página.";
   if (status === 404) return "Página não encontrada ou sem acesso.";
   if (status === 429) return "Muitas tentativas seguidas ao Notion.";
   if (status === 502 || status === 504) return "O Notion não respondeu como esperado. Tente de novo em instantes.";
@@ -61,10 +70,11 @@ function formatWait(seconds: number): string {
 export async function fetchMindMap(pageId: string): Promise<MindMapNode> {
   let res: Response;
   try {
-    res = await fetch(`/api/mindmaps/notion/${encodeURIComponent(pageId)}`);
+    res = await fetch(`/api/mindmaps/notion/${encodeURIComponent(pageId)}`, { credentials: "same-origin" });
   } catch {
     throw new Error(UNREACHABLE_MESSAGE);
   }
+  if (res.status === 401) throw new SessionExpiredError();
   if (!res.ok) {
     const problem = await readProblem(res);
     const message = problem.text ?? genericMessage(res.status, problem.isJson);

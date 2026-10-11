@@ -1,3 +1,5 @@
+import type { SessionUser } from "@/lib/auth";
+import { LOGIN_URL } from "@/lib/auth";
 import { DocIcon, MapIcon, SidebarIcon } from "./icons";
 
 interface AppHeaderProps {
@@ -9,6 +11,11 @@ interface AppHeaderProps {
   hideInput?: boolean;
   mapTitle?: string;
   onToggleSidebar: () => void;
+  // Só gera mapa quando a pessoa está logada (ou com o fallback de dev).
+  canGenerate: boolean;
+  sessionLoading: boolean;
+  user: SessionUser | null;
+  onLogout: () => void;
 }
 
 export function AppHeader({
@@ -19,6 +26,10 @@ export function AppHeader({
   hideInput = false,
   mapTitle,
   onToggleSidebar,
+  canGenerate,
+  sessionLoading,
+  user,
+  onLogout,
 }: AppHeaderProps) {
   return (
     <header className="flex h-[52px] flex-none items-center gap-3 border-b border-line bg-surface px-3">
@@ -62,7 +73,8 @@ export function AppHeader({
             <input
               value={pageId}
               onChange={(e) => onPageIdChange(e.target.value)}
-              placeholder="Cole o ID da página do Notion"
+              disabled={!canGenerate}
+              placeholder={canGenerate ? "Cole o ID da página do Notion" : "Entre com o Notion para gerar um mapa"}
               spellCheck={false}
               autoComplete="off"
               className="min-w-0 flex-1 bg-transparent text-[13px] text-ink outline-none placeholder:text-faint"
@@ -70,13 +82,46 @@ export function AppHeader({
           </label>
           <button
             type="submit"
-            disabled={loading || !pageId.trim()}
+            disabled={loading || !canGenerate || !pageId.trim()}
             className="h-[34px] whitespace-nowrap rounded-lg bg-accent px-3.5 text-[13px] font-medium text-accent-fg transition-[filter,transform] hover:brightness-110 active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-50"
           >
             Gerar mapa
           </button>
         </form>
       )}
+
+      {!hideInput && !sessionLoading && (
+        <div className="flex flex-none items-center gap-2">
+          {user ? (
+            <>
+              <p className="hidden min-w-0 max-w-56 truncate text-[13px] text-muted lg:block">
+                <span className="font-medium text-ink">{user.userName}</span> · {user.workspaceName}
+              </p>
+              <button
+                type="button"
+                onClick={onLogout}
+                className="h-[34px] whitespace-nowrap rounded-lg border border-line px-3 text-[13px] font-medium text-ink transition-colors hover:border-line-hi hover:bg-surface-2"
+              >
+                Sair
+              </button>
+            </>
+          ) : (
+            <LoginButton />
+          )}
+        </div>
+      )}
     </header>
+  );
+}
+
+// Navegação de página (não fetch): o backend responde com o redirecionamento ao Notion.
+export function LoginButton() {
+  return (
+    <a
+      href={LOGIN_URL}
+      className="inline-flex h-[34px] items-center whitespace-nowrap rounded-lg bg-accent px-3.5 text-[13px] font-medium text-accent-fg transition-[filter,transform] hover:brightness-110 active:scale-[0.97]"
+    >
+      Entrar com o Notion
+    </a>
   );
 }
