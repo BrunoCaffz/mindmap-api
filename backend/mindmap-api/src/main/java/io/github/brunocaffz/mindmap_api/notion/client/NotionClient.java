@@ -15,6 +15,10 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
+/**
+ * Único lugar que lê páginas do Notion. O token de acesso chega a cada chamada (é o do usuário logado),
+ * então este objeto não guarda credencial nenhuma e pode ser compartilhado entre requisições.
+ */
 @Component
 public class NotionClient {
     private static final Logger log = LoggerFactory.getLogger(NotionClient.class);
@@ -27,14 +31,14 @@ public class NotionClient {
 
     public NotionClient(NotionProperties props){
         this.http = RestClient.builder()
-                .baseUrl("https://api.notion.com/v1")
-                .defaultHeader("Authorization", "Bearer " + props.token())
+                .baseUrl(props.baseUrl())
                 .defaultHeader("Notion-Version", props.version())
                 .build();
     }
 
-    public String getPageTitle(String pageId) {
+    public String getPageTitle(String accessToken, String pageId) {
         JsonNode page = http.get().uri("/pages/{id}", pageId)
+                .headers(h -> h.setBearerAuth(accessToken))
                 .retrieve().body(JsonNode.class); // pega a resposta e a converte em JsonNode, a árvore de JSON do Jackson.
 
         for (JsonNode prop : page.path("properties")) {
@@ -47,7 +51,7 @@ public class NotionClient {
         return "Untitled";
     }
 
-    public List<JsonNode> getBlockChildren(String blockId){
+    public List<JsonNode> getBlockChildren(String accessToken, String blockId){
         List<JsonNode> all = new ArrayList<>();
         String cursor = null;
 
@@ -59,6 +63,7 @@ public class NotionClient {
                     .queryParam("page_size", 100)
                     .queryParamIfPresent("start_cursor", Optional.ofNullable(current))
                     .build(blockId))
+                    .headers(h -> h.setBearerAuth(accessToken))
                     .retrieve().body(JsonNode.class);
 
             assert res != null;
@@ -69,12 +74,12 @@ public class NotionClient {
         return all;
     }
 
-    public List<JsonNode> getBlockTree(String blockId) {
-        List<JsonNode> blocks = getBlockChildren(blockId);
+    public List<JsonNode> getBlockTree(String accessToken, String blockId) {
+        List<JsonNode> blocks = getBlockChildren(accessToken, blockId);
         for (JsonNode block : blocks) {
             String type = block.path("type").asText();
             if (block.path("has_children").asBoolean() && !NO_RECURSE.contains(type)) {
-                List<JsonNode> children = getBlockTree(block.path("id").asText());
+                List<JsonNode> children = getBlockTree(accessToken, block.path("id").asText());
                 ArrayNode array = ((ObjectNode) block).putArray("children");
                 children.forEach(array::add);
             }
@@ -82,10 +87,13 @@ public class NotionClient {
         return blocks;
     }
 
-    public String getPageMarkdown(String pageId) {
+    public String getPageMarkdown(String accessToken, String pageId) {
         JsonNode res = http.get()
                 .uri("/pages/{id}/markdown", pageId)
-                .headers(h -> h.set("Notion-Version", MARKDOWN_VERSION))
+                .headers(h -> {
+                    h.setBearerAuth(accessToken);
+                    h.set("Notion-Version", MARKDOWN_VERSION);
+                })
                 .retrieve().body(JsonNode.class);
 
         if (res.path("truncated").asBoolean()) {

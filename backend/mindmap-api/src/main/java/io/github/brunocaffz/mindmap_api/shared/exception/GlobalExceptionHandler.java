@@ -6,6 +6,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.client.HttpClientErrorException;
@@ -27,6 +28,50 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(InvalidPageIdException.class)
     public ResponseEntity<ProblemDetail> handleInvalidPageId(InvalidPageIdException ex) {
         return respond(HttpStatus.BAD_REQUEST, "ID de página inválido", ex.getMessage(), null);
+    }
+
+    @ExceptionHandler(UnauthenticatedException.class)
+    public ResponseEntity<ProblemDetail> handleUnauthenticated(UnauthenticatedException ex) {
+        return respond(HttpStatus.UNAUTHORIZED, "Login necessário",
+                "Entre com o Notion para continuar.", null);
+    }
+
+    @ExceptionHandler(NotionConnectionExpiredException.class)
+    public ResponseEntity<ProblemDetail> handleConnectionExpired(NotionConnectionExpiredException ex) {
+        return respond(HttpStatus.UNAUTHORIZED, "Conexão com o Notion expirada",
+                "O acesso ao seu Notion expirou ou foi revogado. Entre de novo.", null);
+    }
+
+    @ExceptionHandler(InvalidOAuthStateException.class)
+    public ResponseEntity<ProblemDetail> handleInvalidOAuthState(InvalidOAuthStateException ex) {
+        // Nada do que veio na URL (state, code) é repetido na resposta nem no log.
+        return respond(HttpStatus.BAD_REQUEST, "Login inválido",
+                "O login expirou ou não pôde ser confirmado. Tente entrar de novo.", null);
+    }
+
+    @ExceptionHandler(OAuthExchangeException.class)
+    public ResponseEntity<ProblemDetail> handleOAuthExchange(OAuthExchangeException ex) {
+        if (ex.isRejectedByNotion()) {
+            return respond(HttpStatus.BAD_REQUEST, "Login recusado",
+                    "O Notion não aceitou este login. Tente entrar de novo.", null);
+        }
+        log.error("Falha ao concluir o login com o Notion: {}", ex.getMessage());
+        return respond(HttpStatus.BAD_GATEWAY, "Falha ao acessar o Notion",
+                "Não foi possível concluir o login com o Notion agora.", null);
+    }
+
+    @ExceptionHandler(OAuthNotConfiguredException.class)
+    public ResponseEntity<ProblemDetail> handleOAuthNotConfigured(OAuthNotConfiguredException ex) {
+        log.error("{}: defina NOTION_CLIENT_ID e NOTION_CLIENT_SECRET", ex.getMessage());
+        return respond(HttpStatus.SERVICE_UNAVAILABLE, "Login indisponível",
+                "O login com o Notion não está configurado neste servidor.", null);
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ProblemDetail> handleAccessDenied(AccessDeniedException ex) {
+        // Inclui a falha de CSRF. Não explicamos qual regra barrou.
+        return respond(HttpStatus.FORBIDDEN, "Requisição bloqueada",
+                "A requisição foi bloqueada por segurança. Recarregue a página e tente de novo.", null);
     }
 
     @ExceptionHandler(HttpClientErrorException.class)

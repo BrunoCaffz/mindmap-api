@@ -5,7 +5,32 @@ spring:
     url: jdbc:postgresql://localhost:5433/mindmap
     username: mindmap
     password: mindmap
+  jpa:
+    open-in-view: false
+  session:
+    jdbc:
+      initialize-schema: never
+    timeout: 8h
+
+server:
+  servlet:
+    session:
+      cookie:
+        name: MINDMAP_SESSION
+        http-only: true
+        same-site: lax
+        secure: ${SESSION_COOKIE_SECURE:false}
 
 notion:
-  token: ${NOTION_TOKEN}
+  token: ${NOTION_TOKEN:}
   version: 2022-06-28
+  base-url: https://api.notion.com/v1
+  oauth:
+    client-id: ${NOTION_CLIENT_ID:}
+    client-secret: ${NOTION_CLIENT_SECRET:}
+    redirect-uri: ${NOTION_REDIRECT_URI:http://localhost:3000/api/auth/notion/callback}
+
+app:
+  frontend-url: ${APP_FRONTEND_URL:http://localhost:3000}
+  dev-token-fallback: ${APP_DEV_TOKEN_FALLBACK:false}
+  token-encryption-key: ${TOKEN_ENCRYPTION_KEY:}

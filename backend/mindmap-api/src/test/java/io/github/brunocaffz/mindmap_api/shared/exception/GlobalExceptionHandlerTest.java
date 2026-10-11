@@ -46,6 +46,52 @@ class GlobalExceptionHandlerTest {
     }
 
     @Test
+    void unauthenticatedBecomes401() {
+        ResponseEntity<ProblemDetail> res = handler.handleUnauthenticated(new UnauthenticatedException());
+
+        assertEquals(401, res.getStatusCode().value());
+        assertEquals("Login necessário", res.getBody().getTitle());
+    }
+
+    @Test
+    void revokedNotionAccessBecomes401SoTheFrontAsksToLogInAgain() {
+        ResponseEntity<ProblemDetail> res =
+                handler.handleConnectionExpired(new NotionConnectionExpiredException());
+
+        assertEquals(401, res.getStatusCode().value());
+    }
+
+    @Test
+    void invalidOAuthStateBecomes400WithoutEchoingAnything() {
+        ResponseEntity<ProblemDetail> res = handler.handleInvalidOAuthState(new InvalidOAuthStateException());
+
+        assertEquals(400, res.getStatusCode().value());
+    }
+
+    @Test
+    void codeRejectedByNotionBecomes400AndOurFailureBecomes502() {
+        assertEquals(400, handler.handleOAuthExchange(new OAuthExchangeException("recusado", true))
+                .getStatusCode().value());
+        assertEquals(502, handler.handleOAuthExchange(new OAuthExchangeException("credenciais", false))
+                .getStatusCode().value());
+    }
+
+    @Test
+    void missingOAuthConfigurationBecomes503() {
+        ResponseEntity<ProblemDetail> res = handler.handleOAuthNotConfigured(new OAuthNotConfiguredException());
+
+        assertEquals(503, res.getStatusCode().value());
+    }
+
+    @Test
+    void accessDeniedBecomes403() {
+        ResponseEntity<ProblemDetail> res =
+                handler.handleAccessDenied(new org.springframework.security.access.AccessDeniedException("csrf"));
+
+        assertEquals(403, res.getStatusCode().value());
+    }
+
+    @Test
     void invalidPageIdBecomes400() {
         ResponseEntity<ProblemDetail> res =
                 handler.handleInvalidPageId(new InvalidPageIdException("ID inválido"));
