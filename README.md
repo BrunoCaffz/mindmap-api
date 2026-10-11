@@ -41,7 +41,7 @@ As outras decisões ficam em [docs/DECISIONS.md](docs/DECISIONS.md).
 
 ## Stack
 
-- **Backend:** Java 21, Spring Boot, WebClient/RestClient, Jackson, JUnit
+- **Backend:** Java 21, Spring Boot, Spring Security, Spring Session JDBC, Flyway, RestClient, Jackson, JUnit
 - **Frontend:** Next.js, TypeScript, Tailwind, React Flow, dagre
 - **Infra local:** Docker Compose (Postgres)
 - **CI:** GitHub Actions (testes do backend, lint e build do front, gitleaks)
@@ -50,17 +50,21 @@ As outras decisões ficam em [docs/DECISIONS.md](docs/DECISIONS.md).
 
 Precisa de Java 21, Maven, Node 20 ou mais novo e Docker.
 
-1. Crie um token em [notion.so/profile/integrations](https://www.notion.so/profile/integrations). Numa integração interna, conecte a página pelo menu `...` > Conexões.
-2. Defina o token como variável de ambiente (ele nunca vai pro código nem pro front):
-    - PowerShell: `$env:NOTION_TOKEN="seu_token"`
-    - bash: `export NOTION_TOKEN="seu_token"`
-3. Suba o Postgres: `docker compose up -d`. A aplicação sobe junto com ele, mas ainda não grava nada.
-4. Backend: `cd backend/mindmap-api` e `mvn spring-boot:run` (porta 8080).
+1. Suba o Postgres: `docker compose up -d`. Ele guarda as sessões e os tokens.
+2. Gere a chave que criptografa os tokens (sem ela o backend não sobe) e defina as variáveis de ambiente. O modelo, com explicação de cada uma, está em [`.env.example`](.env.example):
+    - bash: `export TOKEN_ENCRYPTION_KEY="$(openssl rand -base64 32)"`
+    - PowerShell: `$b = New-Object byte[] 32; [Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($b); $env:TOKEN_ENCRYPTION_KEY = [Convert]::ToBase64String($b)`
+3. Escolha como o backend lê o Notion:
+    - **Login com o Notion (OAuth2).** Crie uma integração **pública** em [notion.so/profile/integrations](https://www.notion.so/profile/integrations), cadastre o Redirect URI `http://localhost:3000/api/auth/notion/callback` e defina `NOTION_CLIENT_ID` e `NOTION_CLIENT_SECRET`. Cada pessoa entra com a própria conta e o token dela fica criptografado no banco.
+    - **Token pessoal, só para desenvolvimento.** Crie uma integração interna, conecte a página pelo menu `...` > Conexões e defina `NOTION_TOKEN` e `APP_DEV_TOKEN_FALLBACK=true`. Sem usuário logado, o backend usa esse token. Em produção isso fica desligado.
+4. Backend: `cd backend/mindmap-api` e `mvn spring-boot:run` (porta 8080). O Flyway cria as tabelas na primeira subida.
 5. Frontend: `cd frontend`, `npm install` e `npm run dev`, depois abra `localhost:3000`.
+
+A tela ainda não tem o botão "Entrar com o Notion". Enquanto isso, para ver o mapa funcionando localmente, use o token pessoal do passo 3. Para testar o login pelo navegador, abra `localhost:3000/api/auth/notion/login`.
 
 Pra copiar o ID de uma página, pegue os 32 caracteres no final da URL dela.
 
-Testes: `mvn test` no backend, `npm run lint` e `npm run build` no frontend.
+Testes: `mvn verify` no backend (não precisa de banco nem de variáveis), `npm run lint` e `npm run build` no frontend.
 
 ## Estrutura
 
@@ -73,12 +77,11 @@ docker-compose.yml    Postgres local
 
 ## O que ainda não existe
 
-- Login com Notion (OAuth2). Hoje o backend usa um token meu, então ele só roda na minha máquina.
+- Tela de login no frontend. O backend já faz o login com o Notion (OAuth2) e a sessão; falta o botão "Entrar", mostrar quem está logado (`/api/me`), o logout (com o cabeçalho `X-XSRF-TOKEN`) e o aviso quando a API responde 401.
 - Salvar mapas no Postgres (JSONB), junto com cores e posições editadas.
-- Exportar PNG e SVG.
 - Botão "atualizar mapa" quando a página muda no Notion.
 - Camada de IA opcional pra reorganizar o conteúdo.
 
 ## Segurança
 
-O conteúdo das páginas é tratado como dado não confiável: o front renderiza tudo como texto, sem HTML cru. O token do Notion fica só no backend, em variável de ambiente. O ID da página é validado no front e de novo no backend. O CI roda o gitleaks no histórico inteiro do repositório.
+O conteúdo das páginas é tratado como dado não confiável: o front renderiza tudo como texto, sem HTML cru. O login com o Notion usa OAuth2 com sessão no servidor: o navegador só recebe um cookie `HttpOnly`, e o token do Notion de cada pessoa fica só no backend, criptografado no banco (AES-GCM, chave em variável de ambiente), nunca no front nem no log. O ID da página é validado no front e de novo no backend. O CI roda o gitleaks no histórico inteiro do repositório.
