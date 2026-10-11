@@ -1,4 +1,14 @@
-   .idea/
-   .env
-   node_modules/
-   .next/frontend/.claude/settings.local.json
+# IDE
+.idea/
+
+# Variáveis de ambiente e segredos: nunca versionar. O modelo sem valores é o .env.example.
+.env
+.env.*
+!.env.example
+
+# Dependências e builds
+node_modules/
+.next/
+
+# Configuração local do Claude Code
+frontend/.claude/settings.local.json
