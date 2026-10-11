@@ -99,7 +99,9 @@ animações com `framer-motion`, exportação de imagem com `html-to-image`. Sem
   ícone nem número do contador).
 - Exportar imagem: "Baixar PNG" e "Baixar SVG" na sidebar (`src/hooks/useExportImage.ts`). Exporta o mapa
   inteiro, não só a área visível, do jeito que está na tela (ramos recolhidos continuam recolhidos), com o
-  fundo do tema ativo e sem minimapa, controles, busca nem barra de níveis. O PNG sai em 2x e a escala
+  fundo do tema ativo cobrindo a imagem toda (também no SVG) e sem minimapa, controles, busca nem barra de
+  níveis. Há uma margem de 8% por lado (mínimo 80 px), porque os limites dos nós não incluem os rótulos das
+  bolhas. O PNG sai em 2x e a escala
   cai sozinha em mapas muito grandes (máx. 16000 px de lado e 40 milhões de pixels). O nome do arquivo
   vem do título do mapa, sanitizado em `src/lib/filename.ts` (só `[a-z0-9-]`, fallback `mindmap`). Funciona
   nos quatro layouts e no modo demonstração. Não chama o backend; a primeira exportação relê as fontes do

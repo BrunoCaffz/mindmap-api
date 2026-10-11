@@ -3,13 +3,12 @@
 import { useCallback, useState } from "react";
 import { getNodesBounds, getViewportForBounds, useReactFlow } from "@xyflow/react";
 import { toBlob, toSvg } from "html-to-image";
-import { pixelRatioFor } from "@/lib/exportSize";
+import { marginFor, pixelRatioFor } from "@/lib/exportSize";
 import { withSvgBackground } from "@/lib/exportSvg";
 import { slugifyFilename } from "@/lib/filename";
 
 export type ExportFormat = "png" | "svg";
 
-const IMAGE_PADDING_PX = 48;
 const EXPORT_ERROR = "Não consegui gerar a imagem. Tente de novo.";
 const REVOKE_DELAY_MS = 4000;
 
@@ -63,11 +62,17 @@ export function useExportImage(title: string | undefined) {
         if (!element || nodes.length === 0) throw new Error("nothing to export");
 
         // O mapa inteiro, não só a parte visível: o viewport da imagem é calculado a partir dos limites
-        // de todos os nós e aplicado só na cópia que o html-to-image captura.
+        // de todos os nós, mais uma margem para o que sai deles (rótulos), e aplicado só na cópia que o
+        // html-to-image captura.
         const bounds = getNodesBounds(nodes);
-        const width = Math.ceil(bounds.width + IMAGE_PADDING_PX * 2);
-        const height = Math.ceil(bounds.height + IMAGE_PADDING_PX * 2);
-        const viewport = getViewportForBounds(bounds, width, height, 0.1, 1, `${IMAGE_PADDING_PX}px`);
+        const marginX = marginFor(bounds.width);
+        const marginY = marginFor(bounds.height);
+        const width = Math.ceil(bounds.width + marginX * 2);
+        const height = Math.ceil(bounds.height + marginY * 2);
+        const viewport = getViewportForBounds(bounds, width, height, 0.1, 1, {
+          x: `${marginX}px`,
+          y: `${marginY}px`,
+        });
 
         const background = getComputedStyle(document.body).backgroundColor;
         const options = {
