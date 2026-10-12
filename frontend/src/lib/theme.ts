@@ -13,14 +13,18 @@ function subscribe(onChange: () => void): () => void {
 }
 
 function getSnapshot(): Theme {
-  return document.documentElement.dataset.theme === "light" ? "light" : "dark";
+  return document.documentElement.dataset.theme === "dark" ? "dark" : "light";
 }
 
 export function useTheme(): [Theme, (theme: Theme) => void] {
-  const theme = useSyncExternalStore(subscribe, getSnapshot, () => "dark" as Theme);
+  const theme = useSyncExternalStore(subscribe, getSnapshot, () => "light" as Theme);
 
   const setTheme = useCallback((next: Theme) => {
-    document.documentElement.dataset.theme = next;
+    const root = document.documentElement;
+    // A classe liga a transição de cores só durante a troca (ver globals.css).
+    root.classList.add("theme-fade");
+    window.setTimeout(() => root.classList.remove("theme-fade"), 260);
+    root.dataset.theme = next;
     try {
       localStorage.setItem(STORAGE_KEY, next);
     } catch {

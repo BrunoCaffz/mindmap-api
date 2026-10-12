@@ -17,7 +17,19 @@ export class SessionExpiredError extends Error {
   }
 }
 
-const UNREACHABLE_MESSAGE = "Não consegui falar com o servidor.";
+// Erro de carregamento com o status HTTP (null quando o servidor nem respondeu). A tela usa o status só
+// para escolher o título e o desenho do aviso; o texto vem do backend.
+export class MindMapError extends Error {
+  readonly status: number | null;
+
+  constructor(message: string, status: number | null) {
+    super(message);
+    this.name = "MindMapError";
+    this.status = status;
+  }
+}
+
+const UNREACHABLE_MESSAGE = "Não consegui falar com o servidor. Confere sua conexão e tenta de novo.";
 
 // Limite do texto vindo do backend, para uma resposta estranha não encher a tela.
 const MAX_DETAIL_LENGTH = 300;
@@ -25,13 +37,13 @@ const MAX_DETAIL_LENGTH = 300;
 // Usadas só quando a resposta não traz um `detail` utilizável. `answered` diz se o corpo era JSON:
 // um 500 em texto puro é o proxy do Next avisando que não alcançou o backend.
 function genericMessage(status: number, answered: boolean): string {
-  if (status === 400) return "O ID informado não parece válido. Confira se copiou o ID da página inteiro.";
-  if (status === 403) return "Sem acesso a essa página.";
-  if (status === 404) return "Página não encontrada ou sem acesso.";
-  if (status === 429) return "Muitas tentativas seguidas ao Notion.";
-  if (status === 502 || status === 504) return "O Notion não respondeu como esperado. Tente de novo em instantes.";
-  if (status >= 500) return answered ? "O servidor não conseguiu gerar o mapa. Tente de novo." : UNREACHABLE_MESSAGE;
-  return `Não foi possível carregar o mapa (HTTP ${status}).`;
+  if (status === 400) return "Esse ID não parece válido. Confere se você copiou o ID da página inteiro.";
+  if (status === 403) return "O app não tem acesso a essa página. Libere ela no Notion e tente de novo.";
+  if (status === 404) return "Não achei essa página, ou o app não tem acesso a ela.";
+  if (status === 429) return "O Notion pediu um respiro depois de tantas tentativas seguidas.";
+  if (status === 502 || status === 504) return "O Notion demorou demais pra responder. Acontece com páginas grandes. Tenta de novo em alguns segundos.";
+  if (status >= 500) return answered ? "O servidor não conseguiu desenhar o mapa. Tenta de novo em alguns segundos." : UNREACHABLE_MESSAGE;
+  return `Não consegui carregar o mapa (erro ${status}).`;
 }
 
 // O backend responde erros em application/problem+json com `title` e `detail` já em português.
@@ -72,7 +84,7 @@ export async function fetchMindMap(pageId: string): Promise<MindMapNode> {
   try {
     res = await fetch(`/api/mindmaps/notion/${encodeURIComponent(pageId)}`, { credentials: "same-origin" });
   } catch {
-    throw new Error(UNREACHABLE_MESSAGE);
+    throw new MindMapError(UNREACHABLE_MESSAGE, null);
   }
   if (res.status === 401) throw new SessionExpiredError();
   if (!res.ok) {
@@ -80,7 +92,7 @@ export async function fetchMindMap(pageId: string): Promise<MindMapNode> {
     const message = problem.text ?? genericMessage(res.status, problem.isJson);
     // No 429 a pessoa decide quando tentar de novo: a requisição nunca é repetida sozinha.
     const wait = res.status === 429 ? retryAfterSeconds(res) : null;
-    throw new Error(wait ? `${message} Tente de novo em ${formatWait(wait)}.` : message);
+    throw new MindMapError(wait ? `${message} Dá pra tentar de novo em ${formatWait(wait)}.` : message, res.status);
   }
   return (await res.json()) as MindMapNode;
 }

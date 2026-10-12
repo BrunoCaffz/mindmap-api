@@ -1,12 +1,14 @@
+import { CloseIcon, SearchIcon } from "./icons";
+
 export type DepthSetting = number | "all" | null;
 
 const DEPTH_OPTIONS = [1, 2, 3, 4];
 
 const BUTTON =
-  "h-8 rounded-lg px-3 text-xs font-medium text-muted transition-[background-color,color,transform] hover:bg-surface-2 hover:text-ink active:scale-[0.97]";
+  "h-8 rounded-sm px-2.5 text-[13px] transition-[background-color,transform] duration-100 hover:bg-hover active:scale-[0.97]";
 
 const ICON_BUTTON =
-  "flex h-7 w-7 items-center justify-center rounded-md text-sm text-muted transition-colors hover:bg-surface-2 hover:text-ink disabled:opacity-40 disabled:hover:bg-transparent";
+  "flex h-8 w-8 flex-none items-center justify-center rounded-sm text-muted transition-colors hover:bg-hover hover:text-ink disabled:opacity-40 disabled:hover:bg-transparent";
 
 interface SearchProps {
   query: string;
@@ -23,11 +25,12 @@ function SearchBox({ query, onQueryChange, matchCount, currentIndex, onStep, onC
   const status = !hasQuery
     ? ""
     : matchCount === 0
-      ? "Nenhum resultado"
+      ? "Nada por aqui"
       : `${currentIndex === null ? "·" : currentIndex + 1} de ${matchCount}`;
 
   return (
-    <div className="flex w-80 items-center gap-1 rounded-xl border border-line bg-surface p-1 shadow-pop focus-within:border-accent">
+    <div className="flex h-10 w-[min(300px,calc(100vw-24px))] items-center gap-1 rounded-md border border-line bg-bg pl-3 pr-1 shadow-float focus-within:border-focus">
+      <SearchIcon width={15} height={15} className="flex-none text-muted" />
       <input
         type="text"
         value={query}
@@ -46,26 +49,38 @@ function SearchBox({ query, onQueryChange, matchCount, currentIndex, onStep, onC
             onClear();
           }
         }}
-        aria-label="Buscar por título"
+        aria-label="Buscar no mapa"
         placeholder="Buscar por título"
         spellCheck={false}
         autoComplete="off"
-        className="h-7 min-w-0 flex-1 bg-transparent px-2 text-[13px] text-ink outline-none placeholder:text-faint"
+        className="h-9 min-w-0 flex-1 bg-transparent px-1.5 text-base text-ink outline-none"
       />
-      <span aria-live="polite" className="whitespace-nowrap px-1 text-[11px] text-faint">
+      <span aria-live="polite" className="whitespace-nowrap px-1 text-[11px] text-muted">
         {status}
       </span>
-      <button type="button" aria-label="Resultado anterior" disabled={matchCount === 0} onClick={() => onStep(-1)} className={ICON_BUTTON}>
-        ↑
-      </button>
-      <button type="button" aria-label="Próximo resultado" disabled={matchCount === 0} onClick={() => onStep(1)} className={ICON_BUTTON}>
-        ↓
-      </button>
       {hasQuery && (
         <button type="button" aria-label="Limpar busca" onClick={onClear} className={ICON_BUTTON}>
-          ×
+          <CloseIcon width={12} height={12} />
         </button>
       )}
+      <button
+        type="button"
+        aria-label="Resultado anterior"
+        disabled={matchCount === 0}
+        onClick={() => onStep(-1)}
+        className={ICON_BUTTON}
+      >
+        ↑
+      </button>
+      <button
+        type="button"
+        aria-label="Próximo resultado"
+        disabled={matchCount === 0}
+        onClick={() => onStep(1)}
+        className={ICON_BUTTON}
+      >
+        ↓
+      </button>
     </div>
   );
 }
@@ -80,26 +95,26 @@ export function MapToolbar({ depth, onDepthChange, search }: MapToolbarProps) {
   return (
     <div className="flex flex-col items-start gap-2">
       <SearchBox {...search} />
-      <div className="flex items-center gap-1 rounded-xl border border-line bg-surface p-1 shadow-pop">
+      <div className="flex flex-wrap items-center gap-0.5 rounded-md border border-line bg-bg p-1 shadow-float">
         <button type="button" onClick={() => onDepthChange("all")} className={BUTTON}>
-          Expandir tudo
+          Abrir tudo
         </button>
         <button type="button" onClick={() => onDepthChange(0)} className={BUTTON}>
-          Recolher tudo
+          Fechar tudo
         </button>
-        <div className="mx-1 h-5 w-px bg-line" />
-        <span className="px-1 text-xs text-faint" id="depth-label">
+        <span aria-hidden="true" className="mx-1 h-[18px] w-px bg-line" />
+        <span className="px-1 text-[13px] text-muted" id="depth-label">
           Níveis
         </span>
-        <div role="group" aria-labelledby="depth-label" className="flex gap-0.5 rounded-lg bg-bg p-0.5">
+        <div role="group" aria-labelledby="depth-label" className="flex gap-0.5">
           {DEPTH_OPTIONS.map((option) => (
             <button
               key={option}
               type="button"
               aria-pressed={depth === option}
               onClick={() => onDepthChange(option)}
-              className={`h-7 w-7 rounded-md text-xs font-medium transition-colors ${
-                depth === option ? "bg-accent-soft text-ink" : "text-muted hover:text-ink"
+              className={`h-8 w-8 rounded-sm text-[13px] transition-[background-color,transform] duration-100 hover:bg-hover active:scale-[0.97] ${
+                depth === option ? "bg-active font-bold" : ""
               }`}
             >
               {option}

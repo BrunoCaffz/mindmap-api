@@ -17,20 +17,25 @@ import "@xyflow/react/dist/style.css";
 import { AnimatePresence, MotionConfig } from "framer-motion";
 import { buildLayout, type LayoutMode, type MapFlowNode, type Spacing } from "@/lib/layout";
 import type { Theme } from "@/lib/theme";
-import { collapsedForDepth, expandAncestors, findMatches, indexById } from "@/lib/tree";
+import { collapsedForDepth, countDescendants, expandAncestors, findMatches, indexById } from "@/lib/tree";
+import { useMediaQuery } from "@/lib/useMediaQuery";
 import {
   ANIMATION_MS,
   CLICK_ZOOM,
+  DESKTOP_QUERY,
   DETAIL_PANEL_WIDTH,
+  DETAIL_SHEET_HEIGHT,
   INITIAL_DEPTH,
   MIN_ZOOM,
   READING_ZOOM,
   SEARCH_DEBOUNCE_MS,
+  motionMs,
 } from "@/lib/view";
 import type { MindMapNode } from "@/types/mindmap";
 import { BubbleNode } from "./BubbleNode";
 import { DetailPanel } from "./DetailPanel";
 import { MapNode } from "./MapNode";
+import { FitIcon } from "./icons";
 import { MapToolbar, type DepthSetting } from "./MapToolbar";
 
 const nodeTypes = { mapNode: MapNode, bubbleNode: BubbleNode };
@@ -58,11 +63,6 @@ interface Transition {
   positions: Map<string, Point>;
 }
 
-const minimapColors: Record<Theme, { main: string; rest: string }> = {
-  dark: { main: "#7c83ff", rest: "#5b6577" },
-  light: { main: "#5b5bd6", rest: "#94a0b4" },
-};
-
 function centerOf(node: MapFlowNode): Point {
   return { x: node.position.x + node.data.width / 2, y: node.position.y + node.data.height / 2 };
 }
@@ -83,9 +83,12 @@ interface MindMapProps {
   mode: LayoutMode;
   spacing: Spacing;
   theme: Theme;
+  // Nome do formato e abertura do menu, para a barra de baixo do celular.
+  modeLabel: string;
+  onOpenMenu: () => void;
 }
 
-export function MindMap({ tree, mode, spacing, theme }: MindMapProps) {
+export function MindMap({ tree, mode, spacing, theme, modeLabel, onOpenMenu }: MindMapProps) {
   const [collapsedIds, setCollapsedIds] = useState<ReadonlySet<string>>(() =>
     collapsedForDepth(tree, INITIAL_DEPTH),
   );
@@ -97,6 +100,7 @@ export function MindMap({ tree, mode, spacing, theme }: MindMapProps) {
   const [search, setSearch] = useState<SearchState>({ query: "", committed: false, current: 0 });
   const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  const desktop = useMediaQuery(DESKTOP_QUERY, true);
   const { fitView, setCenter, getZoom } = useReactFlow();
   const store = useStoreApi();
 
@@ -241,7 +245,7 @@ export function MindMap({ tree, mode, spacing, theme }: MindMapProps) {
     if (!focused) return;
     const { x, y } = centerOf(focused);
     const zoom = Math.max(getZoom(), focusRequest.zoom ?? 0);
-    setCenter(x, y, { zoom, duration: ANIMATION_MS });
+    setCenter(x, y, { zoom, duration: motionMs() });
   }, [focusRequest, setCenter, getZoom]);
 
   // Visão inicial (e ao trocar de layout ou espaçamento): tudo que cabe no zoom mínimo é enquadrado;
@@ -292,12 +296,14 @@ export function MindMap({ tree, mode, spacing, theme }: MindMapProps) {
     }));
   }, [layout, transition, selectedId, matchSet, currentMatchId]);
 
+  // O minimapa usa as cores dos ramos (variáveis CSS), então já acompanha o tema.
   const minimapColor = useCallback(
-    (node: MapFlowNode) => (node.data.depth <= 1 ? minimapColors[theme].main : minimapColors[theme].rest),
-    [theme],
+    (node: MapFlowNode) => (node.data.branch >= 0 ? `var(--branch-${node.data.branch})` : "var(--root)"),
+    [],
   );
 
-  // Clicar num nó: abre o painel e aproxima nele, deslocado para não ficar atrás do painel.
+  // Clicar num nó: abre o painel e aproxima nele, deslocado para não ficar atrás do painel
+  // (ao lado no computador, por baixo no celular).
   const onNodeClick: NodeMouseHandler = useCallback(
     (_, node) => {
       setSelectedId(node.id);
@@ -305,12 +311,32 @@ export function MindMap({ tree, mode, spacing, theme }: MindMapProps) {
       if (!target) return;
       const zoom = Math.max(getZoom(), CLICK_ZOOM);
       const { x, y } = centerOf(target);
-      setCenter(x + DETAIL_PANEL_WIDTH / 2 / zoom, y, { zoom, duration: ANIMATION_MS + 80 });
+      const shiftX = desktop ? DETAIL_PANEL_WIDTH / 2 / zoom : 0;
+      const shiftY = desktop ? 0 : DETAIL_SHEET_HEIGHT / 2 / zoom;
+      const duration = motionMs() === 0 ? 0 : ANIMATION_MS + 80;
+      setCenter(x + shiftX, y + shiftY, { zoom, duration });
     },
-    [getZoom, setCenter],
+    [getZoom, setCenter, desktop],
   );
   const closePanel = useCallback(() => setSelectedId(null), []);
   const selected = selectedId ? index.get(selectedId) : undefined;
+
+  // Dados do painel: título da raiz, do galho (filho direto da raiz) e a cor do ramo.
+  const detail = useMemo(() => {
+    if (!selected) return null;
+    let branchNode = selected;
+    while (branchNode.depth > 1 && branchNode.parentId) {
+      const parent = index.get(branchNode.parentId);
+      if (!parent) break;
+      branchNode = parent;
+    }
+    return {
+      rootTitle: tree.title || "(sem título)",
+      branchTitle: branchNode.depth >= 1 ? branchNode.node.title || "(sem título)" : "",
+      branch: layout.nodes.find((n) => n.id === selected.node.id)?.data.branch ?? -1,
+      descendants: countDescendants(selected.node),
+    };
+  }, [selected, index, layout, tree]);
 
   return (
     <MotionConfig reducedMotion="user">
@@ -327,13 +353,19 @@ export function MindMap({ tree, mode, spacing, theme }: MindMapProps) {
           onNodeClick={onNodeClick}
           onPaneClick={closePanel}
         >
-          <Background variant={BackgroundVariant.Dots} gap={22} size={1.2} color="var(--grid)" />
-          <Controls showInteractive={false} fitViewOptions={FIT_OPTIONS} />
+          <Background variant={BackgroundVariant.Dots} gap={20} size={1.2} color="var(--grid)" />
+          <Controls showInteractive={false} fitViewOptions={FIT_OPTIONS} className="max-md:!hidden" />
           <MiniMap
             pannable
             zoomable
             nodeColor={minimapColor}
-            style={{ right: selected ? 320 : 0, transition: "right 0.2s ease-out" }}
+            nodeStrokeWidth={0}
+            className="max-md:!hidden"
+            style={{
+              right: selected && desktop ? DETAIL_PANEL_WIDTH + 12 : 12,
+              bottom: 12,
+              transition: "right 0.2s ease-out",
+            }}
           />
           <Panel position="top-left">
             <MapToolbar
@@ -349,10 +381,41 @@ export function MindMap({ tree, mode, spacing, theme }: MindMapProps) {
               }}
             />
           </Panel>
+          {!selected && (
+            <Panel position="bottom-center" className="md:!hidden">
+              <div className="flex w-[calc(100vw-32px)] max-w-[420px] gap-2">
+                <button
+                  type="button"
+                  onClick={onOpenMenu}
+                  className="h-12 flex-1 rounded-lg border border-line bg-bg font-semibold shadow-float transition-transform active:scale-[0.97]"
+                >
+                  Formato: {modeLabel}
+                </button>
+                <button
+                  type="button"
+                  aria-label="Caber na tela"
+                  onClick={() => fitView({ ...FIT_OPTIONS, duration: motionMs() })}
+                  className="flex h-12 w-12 items-center justify-center rounded-lg border border-line bg-bg shadow-float transition-transform active:scale-[0.97]"
+                >
+                  <FitIcon width={18} height={18} />
+                </button>
+              </div>
+            </Panel>
+          )}
         </ReactFlow>
         <AnimatePresence>
-          {selected && (
-            <DetailPanel key={selected.node.id} node={selected.node} depth={selected.depth} onClose={closePanel} />
+          {selected && detail && (
+            <DetailPanel
+              key={selected.node.id}
+              node={selected.node}
+              depth={selected.depth}
+              rootTitle={detail.rootTitle}
+              branchTitle={detail.branchTitle}
+              branch={detail.branch}
+              descendants={detail.descendants}
+              sheet={!desktop}
+              onClose={closePanel}
+            />
           )}
         </AnimatePresence>
       </div>

@@ -1,184 +1,493 @@
 @import "tailwindcss";
 
-/* Tokens de cor. O tema escuro é o padrão; data-theme="light" troca os valores.
-   O atributo é definido antes da hidratação por um script no layout. */
+/* Tokens do app. Cores, raios, sombras e fontes ficam aqui e os componentes só usam estas variáveis.
+   O tema claro é o padrão; data-theme="dark" troca os valores. O atributo é definido antes da
+   hidratação por um script no layout, então a página já nasce no tema certo, sem piscar. */
 :root {
-  color-scheme: dark;
-  --bg: #0b0f14;
-  --surface: #111827;
-  --surface-2: #172033;
-  --line: rgba(255, 255, 255, 0.08);
-  --line-hi: rgba(255, 255, 255, 0.18);
-  --ink: #e8ecf2;
-  --muted: #8b95a7;
-  --faint: #8591a6;
-  --accent: #7c83ff;
-  --accent-soft: rgba(124, 131, 255, 0.14);
-  --accent-line: rgba(124, 131, 255, 0.45);
-  --accent-tint: color-mix(in srgb, var(--accent) 16%, var(--surface));
-  --warn-tint: color-mix(in srgb, #e3a93b 14%, var(--surface));
-  --accent-fg: #0b0f14;
-  --warn-soft: rgba(227, 169, 59, 0.12);
-  --warn-line: rgba(227, 169, 59, 0.4);
-  --danger: #fca5a5;
-  --danger-soft: rgba(239, 68, 68, 0.12);
-  --danger-line: rgba(239, 68, 68, 0.35);
-  --branch-0: #38bdf8;
-  --branch-1: #2dd4bf;
-  --branch-2: #a78bfa;
-  --branch-3: #fb7185;
-  --branch-4: #a3e635;
-  --branch-5: #fb923c;
-  --grid: rgba(255, 255, 255, 0.055);
-  --shadow-pop: 0 8px 24px rgba(0, 0, 0, 0.35);
+  color-scheme: light;
+
+  /* Superfícies e texto */
+  --bg: #ffffff;
+  --side: #f7f7f5;
+  --canvas: #fbfbfa;
+  --grid: #e3e2de;
+  --ink: #37352f;
+  --muted: #73726e;
+  --line: #e9e9e7;
+  --line-hi: #d3d1cb;
+  --hover: #efefed;
+  --active: #e8e8e5;
+
+  /* Ação principal e foco */
+  --primary: #0b6bcb;
+  --primary-hover: #0a5aab;
+  --on-primary: #ffffff;
+  --root: #2383e2;
+  --focus: #2383e2;
+  --switch-off: #d3d1cb;
+
+  /* Avisos rápidos e dicas */
+  --tip: #2f2e2b;
+  --tip-fg: #ffffff;
+
+  /* Paleta pastel: --c-* é a cor forte (linhas e bordas), --t-* é o tom de fundo. */
+  --c-blue: #337ea9;
+  --c-purple: #9065b0;
+  --c-green: #448361;
+  --c-yellow: #cb912f;
+  --c-orange: #d9730d;
+  --c-pink: #c14c8a;
+  --c-red: #d44c47;
+  --c-brown: #9f6b53;
+  --t-blue: #e7f3f8;
+  --t-purple: #f4f0f7;
+  --t-green: #edf3ec;
+  --t-yellow: #fbf3db;
+  --t-orange: #fbecdd;
+  --t-pink: #faf1f5;
+  --t-red: #fdebec;
+  --t-brown: #f4eeee;
+
+  /* Ramos do mapa: cada filho direto da raiz pega a próxima cor, repetindo a cada 8. */
+  --branch-0: var(--c-blue);
+  --branch-1: var(--c-purple);
+  --branch-2: var(--c-green);
+  --branch-3: var(--c-yellow);
+  --branch-4: var(--c-orange);
+  --branch-5: var(--c-pink);
+  --branch-6: var(--c-brown);
+  --branch-7: var(--c-red);
+  --tint-0: var(--t-blue);
+  --tint-1: var(--t-purple);
+  --tint-2: var(--t-green);
+  --tint-3: var(--t-yellow);
+  --tint-4: var(--t-orange);
+  --tint-5: var(--t-pink);
+  --tint-6: var(--t-brown);
+  --tint-7: var(--t-red);
+
+  /* Raios, sombras e movimento */
+  --r-sm: 6px;
+  --r-md: 8px;
+  --r-lg: 10px;
+  --r-xl: 16px;
+  --sh-float: 0 2px 8px rgba(15, 15, 15, 0.06);
+  --sh-pop: 0 8px 24px rgba(15, 15, 15, 0.1);
+  --sh-sheet: 0 -8px 30px rgba(0, 0, 0, 0.18);
+  --sh-field: 0 1px 2px rgba(15, 15, 15, 0.04);
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-spring: cubic-bezier(0.3, 1.5, 0.5, 1);
+
+  /* Mascotes: no escuro o desenho é invertido para não ficar um vulto branco sobre fundo escuro. */
+  --mascot-filter: none;
 }
 
-:root[data-theme="light"] {
-  color-scheme: light;
-  --bg: #f6f7f9;
-  --surface: #ffffff;
-  --surface-2: #eef0f4;
-  --line: rgba(15, 23, 42, 0.1);
-  --line-hi: rgba(15, 23, 42, 0.22);
-  --ink: #0f172a;
-  --muted: #5b6577;
-  --faint: #66728a;
-  --accent: #5b5bd6;
-  --accent-soft: rgba(91, 91, 214, 0.1);
-  --accent-line: rgba(91, 91, 214, 0.4);
-  --accent-tint: color-mix(in srgb, var(--accent) 12%, var(--surface));
-  --warn-tint: color-mix(in srgb, #c4820a 12%, var(--surface));
-  --accent-fg: #ffffff;
-  --warn-soft: rgba(196, 130, 10, 0.1);
-  --warn-line: rgba(196, 130, 10, 0.4);
-  --danger: #b91c1c;
-  --danger-soft: rgba(239, 68, 68, 0.08);
-  --danger-line: rgba(185, 28, 28, 0.3);
-  --branch-0: #0284c7;
-  --branch-1: #0d9488;
-  --branch-2: #7c3aed;
-  --branch-3: #e11d48;
-  --branch-4: #65a30d;
-  --branch-5: #ea580c;
-  --grid: rgba(15, 23, 42, 0.07);
-  --shadow-pop: 0 8px 24px rgba(15, 23, 42, 0.1);
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --bg: #191919;
+  --side: #202020;
+  --canvas: #1c1c1c;
+  --grid: #2e2e2e;
+  --ink: #d4d4d4;
+  --muted: #9b9b9b;
+  --line: #2f2f2f;
+  --line-hi: #454545;
+  --hover: #2c2c2c;
+  --active: #323232;
+
+  --primary: #1a73d4;
+  --primary-hover: #2383e2;
+  --root: #2f86e0;
+  --focus: #5aa9f5;
+  --switch-off: #454545;
+
+  --tip: #2f2f2f;
+  --tip-fg: #e6e6e4;
+
+  --c-blue: #5e9fe0;
+  --c-purple: #a47bd6;
+  --c-green: #4dab7a;
+  --c-yellow: #d7a43c;
+  --c-orange: #e0873e;
+  --c-pink: #d669a5;
+  --c-red: #e66a64;
+  --c-brown: #b78a72;
+  --t-blue: #143a4e;
+  --t-purple: #3c2d49;
+  --t-green: #243d30;
+  --t-yellow: #564328;
+  --t-orange: #5c3b23;
+  --t-pink: #4e2c3c;
+  --t-red: #522e2a;
+  --t-brown: #4a3228;
+
+  --sh-float: 0 2px 8px rgba(0, 0, 0, 0.3);
+  --sh-pop: 0 8px 24px rgba(0, 0, 0, 0.45);
+  --sh-sheet: 0 -8px 30px rgba(0, 0, 0, 0.5);
+  --sh-field: 0 1px 2px rgba(0, 0, 0, 0.3);
+
+  --mascot-filter: invert(1) brightness(0.86);
 }
 
 @theme inline {
   --color-bg: var(--bg);
-  --color-surface: var(--surface);
-  --color-surface-2: var(--surface-2);
-  --color-line: var(--line);
-  --color-line-hi: var(--line-hi);
+  --color-side: var(--side);
+  --color-canvas: var(--canvas);
   --color-ink: var(--ink);
   --color-muted: var(--muted);
-  --color-faint: var(--faint);
-  --color-accent: var(--accent);
-  --color-accent-soft: var(--accent-soft);
-  --color-accent-line: var(--accent-line);
-  --color-accent-tint: var(--accent-tint);
-  --color-warn-tint: var(--warn-tint);
-  --color-accent-fg: var(--accent-fg);
-  --color-warn-soft: var(--warn-soft);
-  --color-warn-line: var(--warn-line);
-  --color-danger: var(--danger);
-  --color-danger-soft: var(--danger-soft);
-  --color-danger-line: var(--danger-line);
-  --shadow-pop: var(--shadow-pop);
-  --font-sans: var(--font-plex-sans);
+  --color-line: var(--line);
+  --color-line-hi: var(--line-hi);
+  --color-hover: var(--hover);
+  --color-active: var(--active);
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-on-primary: var(--on-primary);
+  --color-root: var(--root);
+  --color-focus: var(--focus);
+  --color-switch-off: var(--switch-off);
+  --color-tip: var(--tip);
+  --color-tip-fg: var(--tip-fg);
+  --color-c-green: var(--c-green);
+  --color-c-red: var(--c-red);
+  --color-c-blue: var(--c-blue);
+  --color-t-red: var(--t-red);
+  --color-t-blue: var(--t-blue);
+  --color-t-green: var(--t-green);
+  --radius-sm: var(--r-sm);
+  --radius-md: var(--r-md);
+  --radius-lg: var(--r-lg);
+  --radius-xl: var(--r-xl);
+  --shadow-float: var(--sh-float);
+  --shadow-pop: var(--sh-pop);
+  --shadow-field: var(--sh-field);
+  --font-sans: var(--font-inter);
   --font-mono: var(--font-plex-mono);
 }
 
 body {
   background: var(--bg);
   color: var(--ink);
-  font-family: var(--font-plex-sans), sans-serif;
+  font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
 }
 
-/* React Flow com a identidade do app */
+/* Foco visível no teclado, igual em todo o app. */
+:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+input::placeholder {
+  color: var(--muted);
+}
+
+/* Troca de tema suave: a classe existe só por um instante, para o mapa não pagar o custo o tempo todo. */
+.theme-fade,
+.theme-fade *,
+.theme-fade *::before,
+.theme-fade *::after {
+  transition:
+    background-color 200ms ease,
+    border-color 200ms ease,
+    color 200ms ease,
+    fill 200ms ease,
+    stroke 200ms ease !important;
+}
+
+/* ---------- React Flow com a cara do app ---------- */
 .react-flow {
-  --xy-edge-stroke: var(--faint);
-  --xy-edge-stroke-width: 1.4;
-  --xy-edge-stroke-selected: var(--accent);
-  --xy-background-color: var(--bg);
-  --xy-controls-button-background-color: var(--surface);
-  --xy-controls-button-background-color-hover: var(--surface-2);
-  --xy-controls-button-color: var(--muted);
+  --xy-background-color: var(--canvas);
+  --xy-edge-stroke: var(--muted);
+  --xy-edge-stroke-width: 1.8;
+  --xy-edge-stroke-selected: var(--primary);
+  --xy-controls-button-background-color: var(--bg);
+  --xy-controls-button-background-color-hover: var(--hover);
+  --xy-controls-button-color: var(--ink);
   --xy-controls-button-color-hover: var(--ink);
-  --xy-controls-button-border-color: var(--line);
-  --xy-controls-box-shadow: var(--shadow-pop);
-  --xy-minimap-background-color: var(--surface);
-  --xy-minimap-mask-background-color: rgba(11, 15, 20, 0.55);
-  --xy-minimap-mask-stroke-color: var(--accent);
+  --xy-controls-button-border-color: transparent;
+  --xy-controls-box-shadow: var(--sh-float);
+  --xy-minimap-background-color: var(--bg);
+  --xy-minimap-mask-background-color: color-mix(in srgb, var(--canvas) 60%, transparent);
+  --xy-minimap-mask-stroke-color: var(--primary);
   --xy-minimap-mask-stroke-width: 1.5;
-}
-
-.react-flow[data-color-mode="light"],
-:root[data-theme="light"] .react-flow {
-  --xy-minimap-mask-background-color: rgba(246, 247, 249, 0.6);
+  background-color: var(--canvas);
 }
 
 .react-flow__edge-path {
-  opacity: 0.7;
+  opacity: 0.85;
+  stroke-linecap: round;
+}
+
+/* Conexão nova (ramo que acabou de abrir) aparece com um fade. As antigas não remontam, então não repetem. */
+.react-flow__edge-path {
+  animation: edge-in 260ms ease-out;
 }
 
 .react-flow__attribution {
   background: transparent;
-  color: var(--faint);
+  color: var(--muted);
+}
+.react-flow__attribution a {
+  color: var(--muted);
 }
 
-.react-flow__controls,
-.react-flow__minimap {
+.react-flow__controls {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 4px;
   overflow: hidden;
   border: 1px solid var(--line);
-  border-radius: 10px;
+  border-radius: var(--r-md);
+  background: var(--bg);
 }
-
 .react-flow__controls-button {
-  border-bottom-color: var(--line);
-  transition: background-color 0.15s, color 0.15s;
+  width: 36px;
+  height: 36px;
+  border: 0;
+  border-radius: var(--r-sm);
+  transition: background-color 120ms ease-out;
+}
+.react-flow__controls-button svg {
+  max-width: 15px;
+  max-height: 15px;
 }
 
-/* Barra de progresso indeterminada do loading */
-@keyframes loading-slide {
+.react-flow__minimap {
+  overflow: hidden;
+  width: 184px;
+  height: 124px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  box-shadow: var(--sh-float);
+}
+
+/* Nó com foco do teclado */
+.react-flow__node:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 4px;
+  border-radius: 16px;
+}
+
+/* ---------- Cartões do mapa ----------
+   Cada nó define --b (cor forte do ramo) e --bt (tom pastel). O nível escolhe o preenchimento. */
+.card-node {
+  transition:
+    border-color 150ms ease-out,
+    box-shadow 150ms ease-out,
+    translate 150ms ease-out;
+}
+.card-node:hover {
+  translate: 0 -1px;
+  box-shadow: var(--sh-float);
+}
+.card-root {
+  border-color: transparent;
+  background: var(--primary);
+  color: var(--on-primary);
+  box-shadow: var(--sh-float);
+}
+.card-root:hover {
+  background: var(--primary-hover);
+}
+.card-1 {
+  background: var(--bt);
+  border-color: var(--b);
+}
+.card-2 {
+  background: color-mix(in srgb, var(--bt) 55%, var(--bg));
+  border-color: color-mix(in srgb, var(--b) 60%, transparent);
+}
+.card-2:hover {
+  border-color: var(--b);
+}
+.card-3 {
+  background: var(--bg);
+  border-color: color-mix(in srgb, var(--b) 45%, var(--line));
+}
+.card-3:hover {
+  border-color: var(--b);
+}
+/* Destaque do Notion (CALLOUT): borda dupla e tom âmbar, além do ícone. */
+.card-callout,
+.card-callout:hover {
+  background: var(--t-yellow);
+  border-color: var(--c-yellow);
+  box-shadow:
+    inset 0 0 0 2px var(--t-yellow),
+    inset 0 0 0 3px var(--c-yellow);
+}
+.card-callout:hover {
+  box-shadow:
+    inset 0 0 0 2px var(--t-yellow),
+    inset 0 0 0 3px var(--c-yellow),
+    var(--sh-float);
+}
+
+/* Bolhas: o círculo mostra a hierarquia e o título fica embaixo. */
+.bubble {
+  transition:
+    transform 180ms var(--ease-spring),
+    box-shadow 180ms ease-out;
+}
+.bubble-root {
+  background: var(--root);
+  border-color: transparent;
+}
+.bubble-1,
+.bubble-2 {
+  background: var(--bt);
+  border-color: var(--b);
+}
+.bubble-3 {
+  background: var(--bt);
+  border-color: color-mix(in srgb, var(--b) 70%, transparent);
+}
+.bubble-callout {
+  background: var(--t-yellow);
+  border-color: var(--c-yellow);
+}
+
+/* ---------- Animações (todas desligadas com prefers-reduced-motion, no fim do arquivo) ---------- */
+@keyframes edge-in {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes mascot-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+}
+@keyframes mascot-lean {
+  0%,
+  100% {
+    transform: rotate(0);
+  }
+  50% {
+    transform: rotate(2.5deg);
+  }
+}
+@keyframes draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes pop {
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 0.35;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -8px);
+  }
+}
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+@keyframes redraw {
+  from {
+    stroke-dashoffset: 200;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.mascot {
+  filter: var(--mascot-filter);
+  pointer-events: none;
+  user-select: none;
+}
+.mascot-bob {
+  animation: mascot-bob 3s ease-in-out infinite;
+}
+.mascot-lean {
+  transform-origin: 0% 100%;
+  animation: mascot-lean 3.6s ease-in-out infinite;
+}
+
+.draw-line {
+  stroke-dasharray: 400;
+  stroke-dashoffset: 400;
+  stroke-linecap: round;
+  animation: draw 900ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+.draw-pop {
+  transform-box: fill-box;
+  transform-origin: center;
+  transform: scale(0);
+  animation: pop 420ms var(--ease-spring) forwards;
+}
+.pulse {
+  animation: pulse 1.2s ease-in-out infinite;
+}
+.rise {
+  animation: rise 360ms var(--ease-out) both;
+}
+.toast {
+  animation: toast-in 220ms var(--ease-out) both;
+}
+
+/* Cartão de exemplo: a linha se redesenha ao passar o mouse. */
+.example-card {
+  transition:
+    transform 180ms var(--ease-out),
+    box-shadow 180ms ease-out;
+}
+.example-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--sh-pop), 0 0 0 1px var(--line);
+}
+.example-card:hover .thumb-line {
+  stroke-dasharray: 200;
+  animation: redraw 700ms ease-out;
+}
+
+/* Quem pede menos movimento não vê nada se mexendo. As animações de entrada terminam no estado final. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    animation-delay: 0ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .mascot-bob,
+  .mascot-lean,
+  .pulse {
+    animation: none !important;
+  }
+}
+
+@keyframes drawer-in {
   from {
     transform: translateX(-100%);
   }
-  to {
-    transform: translateX(250%);
-  }
 }
-
-.loading-bar {
-  animation: loading-slide 1.3s ease-in-out infinite;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .loading-bar {
-    animation: none;
-  }
-}
-
-/* Tons dos balões por nível. A cor do ramo vem da variável --b, definida em cada nó. */
-.tone-1 {
-  background: color-mix(in srgb, var(--b) 18%, var(--surface));
-  border-color: color-mix(in srgb, var(--b) 70%, transparent);
-}
-.tone-1:hover {
-  border-color: var(--b);
-}
-.tone-2 {
-  background: color-mix(in srgb, var(--b) 7%, var(--surface));
-  border-color: color-mix(in srgb, var(--b) 40%, transparent);
-}
-.tone-2:hover {
-  border-color: color-mix(in srgb, var(--b) 75%, transparent);
-}
-.tone-3 {
-  background: var(--surface);
-  border-color: color-mix(in srgb, var(--b) 30%, var(--line));
-  border-style: dashed;
-}
-.tone-3:hover {
-  border-color: color-mix(in srgb, var(--b) 65%, var(--line));
+.drawer-in {
+  animation: drawer-in 260ms cubic-bezier(0.32, 0.72, 0, 1);
 }

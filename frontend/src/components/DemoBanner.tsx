@@ -2,16 +2,16 @@ import { REPOSITORY_URL } from "@/lib/demo";
 
 export function DemoBanner() {
   return (
-    <p className="border-b border-line bg-accent-soft px-4 py-1.5 text-center text-xs text-muted">
-      Demonstração com dados fictícios. Para usar com as suas páginas do Notion, rode o projeto
-      localmente.{" "}
+    <p className="border-b border-line bg-t-blue px-4 py-2 text-center text-[13px] text-ink">
+      Isto é uma demonstração, com um mapa de mentira. Pra usar com as suas páginas do Notion, rode o projeto na sua
+      máquina.{" "}
       <a
         href={REPOSITORY_URL}
         target="_blank"
         rel="noopener noreferrer"
-        className="font-medium text-ink underline underline-offset-2 hover:text-accent"
+        className="font-semibold underline underline-offset-2 hover:text-primary"
       >
-        Repositório no GitHub
+        Ver o código no GitHub
       </a>
     </p>
   );

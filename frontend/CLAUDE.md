@@ -57,7 +57,7 @@ animações com `framer-motion`, exportação de imagem com `html-to-image`. Sem
   502 e 504 (falha do Notion). A tela mostra o `detail` como texto. Se a resposta não for JSON, usa uma
   mensagem genérica pelo status. No 429 mostra o `Retry-After` e nunca repete a requisição sozinha.
   Sem resposta do backend (ou 500 em texto puro, que é o proxy do Next sem alcançar o backend), mostra
-  "Não consegui falar com o servidor.".
+  "Não consegui falar com o servidor. Confere sua conexão e tenta de novo.".
 
 ## Layout e UX
 - Topbar com o campo do Page ID e "Gerar mapa", sidebar com layout, espaçamento e tema, mapa ocupando
@@ -88,8 +88,8 @@ animações com `framer-motion`, exportação de imagem com `html-to-image`. Sem
 - Clicar num nó aproxima nele (zoom mínimo `CLICK_ZOOM`) e abre o painel lateral com o título completo
   e a `description`. Cercas de código viram bloco monoespaçado e linhas `>` viram citação.
 - Barra sobre o mapa: busca por título, "Expandir tudo", "Recolher tudo" e seletor de níveis (1 a 4).
-- Cor por ramo: cada filho direto da raiz recebe uma cor da paleta (`--branch-0` a `--branch-5` em
-  `globals.css`, repetida a cada 6 ramos) e os descendentes herdam, inclusive nas linhas. A cor nunca é
+- Cor por ramo: cada filho direto da raiz recebe uma cor da paleta (`--branch-0` a `--branch-7`, com o tom
+  pastel em `--tint-0` a `--tint-7`, em `globals.css`, repetidos a cada 8 ramos) e os descendentes herdam, inclusive nas linhas. A cor nunca é
   a única pista do tipo: HEADING tem fonte mais pesada e cantos mais redondos, LIST_ITEM tem fonte
   normal, cantos menores e bolinha, CALLOUT tem borda dupla, tom âmbar e ícone de lâmpada.
 - Busca: ignora maiúsculas e acentos. Destaca os nós que combinam e esmaece os outros. Depois de
@@ -112,6 +112,13 @@ animações com `framer-motion`, exportação de imagem com `html-to-image`. Sem
   chamada só. Erro legível se a requisição falhar (ex.: página sem acesso).
 - Tema claro e escuro: segue o sistema por padrão e pode ser trocado na sidebar.
 
+## Visual
+- Todos os tokens (cores claro/escuro, raios `--r-*`, sombras `--sh-*`, paleta pastel `--c-*` e `--t-*`) ficam em
+  `src/app/globals.css`. Os componentes usam só essas variáveis. Fonte: Inter via `next/font`.
+- Referência dos mockups em `docs/design-reference/mockups` (só como consulta). Mascotes decorativos em
+  `public/mascotes` (alt vazio, escondidos em tela estreita, parados com `prefers-reduced-motion`).
+- Textos da interface em português do Brasil, tom próximo e direto, sem travessão.
+
 ## Estrutura
 ```
 src/app/page.tsx               (estado da tela: Page ID, mapa, layout, tema)
@@ -122,7 +129,7 @@ src/components/MapToolbar.tsx  (expandir tudo, recolher tudo, níveis)
 src/components/MapNode.tsx     (balão)
 src/components/BubbleNode.tsx  (bolha)
 src/components/DetailPanel.tsx
-src/components/EmptyMapState.tsx, LoadingMap.tsx, DemoBanner.tsx, ExportButtons.tsx, icons.tsx
+src/components/EmptyMapState.tsx (tela inicial), ErrorCard.tsx, LoadingMap.tsx (esqueleto), DemoBanner.tsx, ExportButtons.tsx, Mascot.tsx, icons.tsx
 src/lib/api.ts                 (fetch tipado e validação do pageId)
 src/lib/layout.ts              (árvore para nodes e edges: dagre, radial, bolhas)
 src/lib/tree.ts, view.ts, theme.ts, demo.ts, filename.ts, exportSize.ts, exportSvg.ts

@@ -1,5 +1,6 @@
-import { useEffect } from "react";
+import { useEffect, type CSSProperties } from "react";
 import { motion } from "framer-motion";
+import { DETAIL_SHEET_HEIGHT } from "@/lib/view";
 import type { MindMapNode } from "@/types/mindmap";
 import { CloseIcon } from "./icons";
 
@@ -39,34 +40,56 @@ function BlockView({ block }: { block: Block }) {
   const text = block.lines.join("\n");
   if (block.kind === "code") {
     return (
-      <pre className="overflow-x-auto rounded-lg border border-line bg-bg p-3 font-mono text-xs text-ink">
+      <pre className="overflow-x-auto rounded-md border border-line bg-side p-3 font-mono text-xs text-ink">
         <code>{text}</code>
       </pre>
     );
   }
   if (block.kind === "quote") {
     return (
-      <blockquote className="whitespace-pre-wrap rounded-lg bg-surface-2 px-3 py-2 italic text-muted">
+      <blockquote className="whitespace-pre-wrap rounded-sm border-l-[3px] border-line-hi bg-side px-3 py-2 text-muted">
         {text}
       </blockquote>
     );
   }
-  return <p className="whitespace-pre-wrap text-muted">{text}</p>;
+  return <p className="whitespace-pre-wrap">{text}</p>;
 }
 
-function nodeLabel(node: MindMapNode, depth: number): string {
-  if (depth === 0) return "Raiz";
-  if (node.type === "CALLOUT") return `Nível ${depth} · Destaque`;
-  return `Nível ${depth} · ${node.type === "HEADING" ? "Título" : "Item"}`;
+function kindLabel(node: MindMapNode, depth: number): string {
+  if (depth === 0) return "Raiz do mapa";
+  if (node.type === "CALLOUT") return "Destaque";
+  return node.type === "HEADING" ? "Título" : "Item";
+}
+
+function insideLabel(count: number): string {
+  if (count === 0) return "Nada, é uma ponta do mapa";
+  return count === 1 ? "1 tópico" : `${count} tópicos`;
 }
 
 interface DetailPanelProps {
   node: MindMapNode;
   depth: number;
+  // Título da raiz e do galho (filho direto da raiz) a que o nó pertence. O galho é vazio na raiz.
+  rootTitle: string;
+  branchTitle: string;
+  // Índice da cor do ramo (--branch-N), ou -1 na raiz.
+  branch: number;
+  descendants: number;
+  // No celular o painel vira uma folha por baixo do mapa.
+  sheet: boolean;
   onClose: () => void;
 }
 
-export function DetailPanel({ node, depth, onClose }: DetailPanelProps) {
+export function DetailPanel({
+  node,
+  depth,
+  rootTitle,
+  branchTitle,
+  branch,
+  descendants,
+  sheet,
+  onClose,
+}: DetailPanelProps) {
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
       if (e.key === "Escape") onClose();
@@ -75,35 +98,73 @@ export function DetailPanel({ node, depth, onClose }: DetailPanelProps) {
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [onClose]);
 
-  const blocks = parseDescription(node.description);
+  const blocks = parseDescription(node.description).filter((block) => block.lines.join("").trim() !== "");
+  const color = branch >= 0 ? `var(--branch-${branch})` : "var(--root)";
+  const tint = branch >= 0 ? `var(--tint-${branch})` : "var(--root)";
+  const title = node.title || "(sem título)";
+  const crumb = depth === 0 ? rootTitle : `${rootTitle} / ${branchTitle}`;
 
   return (
     <motion.aside
-      initial={{ x: 24, opacity: 0 }}
-      animate={{ x: 0, opacity: 1 }}
-      exit={{ x: 24, opacity: 0 }}
-      transition={{ duration: 0.2, ease: "easeOut" }}
-      className="absolute right-0 top-0 z-10 flex h-full w-80 max-w-full flex-col border-l border-line bg-surface shadow-pop"
+      aria-label="Detalhes do tópico"
+      initial={sheet ? { y: 40, opacity: 0 } : { x: 16, opacity: 0 }}
+      animate={{ x: 0, y: 0, opacity: 1 }}
+      exit={sheet ? { y: 40, opacity: 0 } : { x: 16, opacity: 0 }}
+      transition={{ duration: 0.28, ease: [0.2, 0.8, 0.2, 1] }}
+      style={sheet ? ({ height: DETAIL_SHEET_HEIGHT } as CSSProperties) : undefined}
+      className={`absolute z-10 flex flex-col gap-3.5 overflow-y-auto bg-bg px-5 pb-6 pt-3 ${
+        sheet
+          ? "inset-x-0 bottom-0 rounded-t-xl border-t border-line shadow-[var(--sh-sheet)]"
+          : "right-0 top-0 h-full w-[340px] max-w-full border-l border-line"
+      }`}
     >
-      <header className="flex items-start justify-between gap-2 border-b border-line p-4">
-        <div className="flex min-w-0 flex-col gap-2">
-          <span className="self-start rounded-full bg-accent-soft px-2 py-0.5 text-[11px] font-medium text-accent">
-            {nodeLabel(node, depth)}
-          </span>
-          <h2 className="break-words text-[15px] font-semibold leading-snug">{node.title || "(sem título)"}</h2>
-        </div>
+      <div className="flex items-center justify-between gap-2">
+        <span className="min-w-0 truncate text-xs text-muted">{crumb}</span>
         <button
           type="button"
           onClick={onClose}
-          aria-label="Fechar painel"
-          className="rounded-md p-1.5 text-muted transition-colors hover:bg-surface-2 hover:text-ink"
+          aria-label="Fechar detalhes"
+          className="flex h-9 w-9 flex-none items-center justify-center rounded-sm text-muted transition-colors hover:bg-hover hover:text-ink"
         >
-          <CloseIcon className="h-4 w-4" />
+          <CloseIcon width={14} height={14} />
         </button>
-      </header>
-      <div className="flex flex-1 flex-col gap-3 overflow-y-auto p-4 text-sm">
+      </div>
+
+      <div className="flex items-center gap-3">
+        <span
+          aria-hidden="true"
+          className="box-border h-7 w-7 flex-none rounded-full border-[3px]"
+          style={{ background: tint, borderColor: branch >= 0 ? color : "transparent" }}
+        />
+        <h2 className="break-words text-[22px] font-bold leading-tight tracking-[-0.01em] sm:text-[26px]">{title}</h2>
+      </div>
+
+      <dl className="grid grid-cols-[110px_1fr] gap-y-1.5 text-[13px]">
+        <dt className="text-muted">Tipo</dt>
+        <dd>{kindLabel(node, depth)}</dd>
+        {depth > 0 && (
+          <>
+            <dt className="text-muted">Galho</dt>
+            <dd className="min-w-0">
+              <span
+                className="inline-flex max-w-full items-center gap-1.5 rounded-[4px] px-1.5 py-px"
+                style={{ background: tint }}
+              >
+                <span aria-hidden="true" className="h-2 w-2 flex-none rounded-full" style={{ background: color }} />
+                <span className="truncate">{branchTitle || title}</span>
+              </span>
+            </dd>
+          </>
+        )}
+        <dt className="text-muted">Dentro dele</dt>
+        <dd>{insideLabel(descendants)}</dd>
+      </dl>
+
+      <div className="h-px flex-none bg-line" />
+
+      <div className="flex flex-col gap-3 text-sm">
         {blocks.length === 0 ? (
-          <p className="text-faint">Sem descrição.</p>
+          <p className="text-muted">Esse tópico não tem texto, só o título.</p>
         ) : (
           blocks.map((block, i) => <BlockView key={i} block={block} />)
         )}

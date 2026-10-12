@@ -1,127 +1,74 @@
-import type { SessionUser } from "@/lib/auth";
-import { LOGIN_URL } from "@/lib/auth";
-import { DocIcon, MapIcon, SidebarIcon } from "./icons";
+import { LOGIN_URL, type SessionUser } from "@/lib/auth";
+import { MenuIcon } from "./icons";
+
+const PRIMARY_BUTTON =
+  "inline-flex h-9 items-center whitespace-nowrap rounded-sm bg-primary px-3.5 font-semibold text-on-primary transition-[background-color,transform] duration-100 hover:bg-primary-hover active:scale-[0.97]";
 
 interface AppHeaderProps {
-  pageId: string;
-  onPageIdChange: (value: string) => void;
-  onSubmit: () => void;
-  loading: boolean;
-  // Esconde o campo de ID e o botão (modo demonstração).
-  hideInput?: boolean;
+  // Título do mapa aberto. Sem ele, o caminho mostra "Sem título".
   mapTitle?: string;
-  onToggleSidebar: () => void;
-  // Só gera mapa quando a pessoa está logada (ou com o fallback de dev).
-  canGenerate: boolean;
+  // Esconde tudo o que é de login (modo demonstração).
+  hideAuth?: boolean;
   sessionLoading: boolean;
   user: SessionUser | null;
   onLogout: () => void;
+  onOpenMenu: () => void;
 }
 
-export function AppHeader({
-  pageId,
-  onPageIdChange,
-  onSubmit,
-  loading,
-  hideInput = false,
-  mapTitle,
-  onToggleSidebar,
-  canGenerate,
-  sessionLoading,
-  user,
-  onLogout,
-}: AppHeaderProps) {
+export function AppHeader({ mapTitle, hideAuth = false, sessionLoading, user, onLogout, onOpenMenu }: AppHeaderProps) {
   return (
-    <header className="flex h-[52px] flex-none items-center gap-3 border-b border-line bg-surface px-3">
-      <button
-        type="button"
-        onClick={onToggleSidebar}
-        aria-label="Mostrar ou esconder a barra lateral"
-        title="Barra lateral"
-        className="hidden rounded-md p-1.5 text-muted transition-colors hover:bg-surface-2 hover:text-ink md:block"
-      >
-        <SidebarIcon className="h-[18px] w-[18px]" />
-      </button>
-
-      <div className="flex items-center gap-2 whitespace-nowrap font-semibold tracking-tight">
-        <span className="flex h-6 w-6 items-center justify-center rounded-md bg-accent text-accent-fg">
-          <MapIcon className="h-3.5 w-3.5" strokeWidth={2} />
-        </span>
-        <span className="hidden sm:inline">Notion Mindmap</span>
+    <header className="flex min-h-12 flex-none items-center justify-between gap-3 border-b border-line bg-bg py-1 pl-2 pr-3 md:pl-4">
+      <div className="flex min-w-0 items-center gap-1 text-muted">
+        <button
+          type="button"
+          onClick={onOpenMenu}
+          aria-label="Abrir o menu"
+          className="flex h-10 w-10 flex-none items-center justify-center rounded-sm text-ink transition-colors hover:bg-hover md:hidden"
+        >
+          <MenuIcon width={20} height={20} />
+        </button>
+        <nav aria-label="Onde você está" className="flex min-w-0 items-center gap-1.5">
+          <span className="hidden sm:inline">Mapas</span>
+          <span aria-hidden="true" className="hidden sm:inline">
+            /
+          </span>
+          <span className="truncate font-medium text-ink sm:font-normal">{mapTitle || "Sem título"}</span>
+        </nav>
       </div>
 
-      {mapTitle && (
-        <>
-          <div className="hidden h-5 w-px bg-line md:block" />
-          <p className="hidden min-w-0 truncate text-muted md:block">
-            Mapa: <span className="font-medium text-ink">{mapTitle}</span>
-          </p>
-        </>
-      )}
-
-      {!hideInput && (
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            onSubmit();
-          }}
-          className="ml-auto flex min-w-0 flex-1 items-center justify-end gap-2 sm:flex-none"
-        >
-          <label className="flex h-[34px] min-w-0 flex-1 items-center gap-2 rounded-lg border border-line bg-bg px-2.5 text-faint transition-colors focus-within:border-accent hover:border-line-hi sm:w-80 sm:flex-none">
-            <DocIcon className="h-3.5 w-3.5 flex-none" />
-            <span className="sr-only">ID da página do Notion</span>
-            <input
-              value={pageId}
-              onChange={(e) => onPageIdChange(e.target.value)}
-              disabled={!canGenerate}
-              placeholder={canGenerate ? "Cole o ID da página do Notion" : "Entre com o Notion para gerar um mapa"}
-              spellCheck={false}
-              autoComplete="off"
-              className="min-w-0 flex-1 bg-transparent text-[13px] text-ink outline-none placeholder:text-faint"
-            />
-          </label>
-          <button
-            type="submit"
-            disabled={loading || !canGenerate || !pageId.trim()}
-            className="h-[34px] whitespace-nowrap rounded-lg bg-accent px-3.5 text-[13px] font-medium text-accent-fg transition-[filter,transform] hover:brightness-110 active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            Gerar mapa
-          </button>
-        </form>
-      )}
-
-      {!hideInput && !sessionLoading && (
-        <div className="flex flex-none items-center gap-2">
-          {user ? (
-            <>
-              <p className="hidden min-w-0 max-w-56 truncate text-[13px] text-muted lg:block">
-                <span className="font-medium text-ink">{user.userName}</span> · {user.workspaceName}
-              </p>
-              <button
-                type="button"
-                onClick={onLogout}
-                className="h-[34px] whitespace-nowrap rounded-lg border border-line px-3 text-[13px] font-medium text-ink transition-colors hover:border-line-hi hover:bg-surface-2"
-              >
-                Sair
-              </button>
-            </>
-          ) : (
-            <LoginButton />
-          )}
-        </div>
-      )}
+      {!hideAuth && !sessionLoading && (user ? <UserMenu user={user} onLogout={onLogout} /> : <LoginButton />)}
     </header>
   );
 }
 
-// Navegação de página (não fetch): o backend responde com o redirecionamento ao Notion.
-export function LoginButton() {
+function UserMenu({ user, onLogout }: { user: SessionUser; onLogout: () => void }) {
   return (
-    <a
-      href={LOGIN_URL}
-      className="inline-flex h-[34px] items-center whitespace-nowrap rounded-lg bg-accent px-3.5 text-[13px] font-medium text-accent-fg transition-[filter,transform] hover:brightness-110 active:scale-[0.97]"
-    >
-      Entrar com o Notion
+    <div className="flex min-w-0 flex-none items-center gap-2">
+      <p className="flex min-w-0 items-center gap-2 text-muted" title={`${user.userName} · ${user.workspaceName}`}>
+        <span aria-hidden="true" className="h-2 w-2 flex-none rounded-full bg-c-green" />
+        <span className="hidden max-w-56 truncate lg:inline">
+          <span className="font-medium text-ink">{user.userName}</span> · {user.workspaceName}
+        </span>
+        <span className="sr-only lg:hidden">
+          Conectado como {user.userName} no workspace {user.workspaceName}
+        </span>
+      </p>
+      <button
+        type="button"
+        onClick={onLogout}
+        className="inline-flex h-9 items-center whitespace-nowrap rounded-sm px-3 font-medium text-ink transition-[background-color,transform] duration-100 hover:bg-hover active:scale-[0.97]"
+      >
+        Sair
+      </button>
+    </div>
+  );
+}
+
+// Navegação de página (não fetch): o backend responde com o redirecionamento para o Notion.
+export function LoginButton({ label = "Conectar meu Notion" }: { label?: string }) {
+  return (
+    <a href={LOGIN_URL} className={PRIMARY_BUTTON}>
+      {label}
     </a>
   );
 }

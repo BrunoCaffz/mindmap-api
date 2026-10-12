@@ -9,7 +9,7 @@ import { slugifyFilename } from "@/lib/filename";
 
 export type ExportFormat = "png" | "svg";
 
-const EXPORT_ERROR = "Não consegui gerar a imagem. Tente de novo.";
+const EXPORT_ERROR = "Não consegui gerar a imagem. Tenta de novo?";
 const REVOKE_DELAY_MS = 4000;
 
 // Elementos de interface que não entram na imagem: minimapa, controles, painéis (busca e barra de
@@ -51,8 +51,9 @@ export function useExportImage(title: string | undefined) {
   const [error, setError] = useState<string | null>(null);
 
   const exportImage = useCallback(
-    async (format: ExportFormat) => {
-      if (exporting) return;
+    // Devolve true quando o arquivo foi baixado (a tela usa isso para avisar a pessoa).
+    async (format: ExportFormat): Promise<boolean> => {
+      if (exporting) return false;
       setExporting(format);
       setError(null);
       try {
@@ -74,7 +75,9 @@ export function useExportImage(title: string | undefined) {
           y: `${marginY}px`,
         });
 
-        const background = getComputedStyle(document.body).backgroundColor;
+        // O fundo da imagem é o do mapa na tela (tema ativo), não o do corpo da página.
+        const canvas = document.querySelector<HTMLElement>(".react-flow") ?? document.body;
+        const background = getComputedStyle(canvas).backgroundColor;
         const options = {
           backgroundColor: background,
           width,
@@ -95,9 +98,11 @@ export function useExportImage(title: string | undefined) {
         } else {
           download(svgBlobFromDataUrl(await toSvg(element, options), background), filename);
         }
+        return true;
       } catch {
         // Sem log: o título e o conteúdo do mapa são dados do usuário.
         setError(EXPORT_ERROR);
+        return false;
       } finally {
         setExporting(null);
       }

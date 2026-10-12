@@ -12,8 +12,14 @@ export const CLICK_ZOOM = 1;
 // Duração da animação ao recolher, expandir e centralizar.
 export const ANIMATION_MS = 320;
 
-// Largura do painel de detalhes (w-80). O mapa se desloca esta metade para o nó não ficar atrás dele.
-export const DETAIL_PANEL_WIDTH = 320;
+// Largura do painel de detalhes no desktop (w-[340px]). O mapa se desloca esta metade para o nó não ficar atrás dele.
+export const DETAIL_PANEL_WIDTH = 340;
+
+// Altura do painel de detalhes no celular (folha por baixo do mapa). O mapa sobe esta metade.
+export const DETAIL_SHEET_HEIGHT = 300;
+
+// Largura a partir da qual a barra lateral fica fixa e o painel de detalhes abre pelo lado (Tailwind md).
+export const DESKTOP_QUERY = "(min-width: 768px)";
 
 // Zoom de leitura usado quando o mapa não cabe na tela: a abertura fica ancorada na raiz neste zoom.
 export const READING_ZOOM = 0.9;
@@ -22,7 +28,12 @@ export const READING_ZOOM = 0.9;
 export const SEMANTIC_ZOOM = 0.85;
 
 // Quantidade de cores da paleta de ramos (as cores ficam em globals.css como --branch-0, --branch-1...).
-export const BRANCH_COLORS = 6;
+export const BRANCH_COLORS = 8;
 
 // Espera depois de parar de digitar na busca antes de expandir os ancestrais e focar no resultado.
 export const SEARCH_DEBOUNCE_MS = 400;
+
+// Quem pede menos movimento recebe os deslocamentos da câmera sem animação.
+export function motionMs(): number {
+  return typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : ANIMATION_MS;
+}
