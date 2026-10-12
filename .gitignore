@@ -12,3 +12,6 @@ node_modules/
 
 # Configuração local do Claude Code
 frontend/.claude/settings.local.json
+
+# Imagens para inspirações
+docs/design-reference/notion/

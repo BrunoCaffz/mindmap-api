@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Erros, avisos e microcopy</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+.mascot{filter:var(--mfilter);pointer-events:none;user-select:none}
+.bob{animation:mbob 3s ease-in-out infinite}
+.lean{transform-origin:0% 100%;animation:lean 3.6s ease-in-out infinite}
+@keyframes mbob{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+@keyframes lean{0%,100%{transform:rotate(0)}50%{transform:rotate(2.5deg)}}
+@media (max-width: 1100px){.peekdog{display:none}}
+a{color:var(--primary)}
+.k{stroke:var(--ink);stroke-width:2.4;stroke-linejoin:round;stroke-linecap:round}
+.fcat{fill:var(--cat)}.fbelly{fill:var(--belly)}.fhat{fill:var(--hat)}.fdog{fill:var(--dog)}.fear{fill:var(--ear)}.fface{fill:var(--face)}.fstar{fill:#F5C84C}
+.sface{stroke:var(--face);fill:none;stroke-width:2;stroke-linecap:round}
+.sdet{stroke:var(--det);fill:none;stroke-width:1.8;stroke-linecap:round}
+.ico{stroke:var(--ink)}
+.cell{padding:8px 14px;border-top:1px solid var(--border)}
+.old{color:var(--muted);text-decoration:line-through;opacity:.8}
+.btnp{align-self:flex-start;margin-top:6px;height:36px;padding:0 14px;border:0;border-radius:6px;background:var(--primary);color:#FFFFFF;font:inherit;font-weight:600}
+.btns{align-self:flex-start;margin-top:6px;height:36px;padding:0 14px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);font:inherit;font-weight:600}
+.box{border:1px solid var(--border);border-radius:10px;padding:24px;display:flex;flex-direction:column;gap:10px;position:relative}
+.eyebrow{font-size:12px;font-weight:600;color:var(--muted)}
+.ttl{font-size:17px;font-weight:700}
+.body{margin:0;color:var(--muted)}
+.toast{display:flex;align-items:center;gap:8px;padding:10px 14px;border-radius:8px;background:var(--tipbg);color:var(--tipfg);font-size:13px}
+</style>
+</helmet>
+<div style="{{vars}} width: 1440px; height: 1180px; box-sizing: border-box; padding: 56px 64px; background: var(--bg); color: var(--text); font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, &quot;Segoe UI Variable Text&quot;, &quot;Segoe UI&quot;, Helvetica, sans-serif; font-size: 14px; line-height: 1.5; display: flex; flex-direction: column; gap: 28px">
+<div>
+<h1 style="margin: 0 0 4px; font-size: 32px; font-weight: 700; letter-spacing: -0.02em">Quando algo dá errado (e quando dá certo)</h1>
+<p style="margin: 0; color: var(--muted); font-size: 15px">Cada aviso diz o que aconteceu e qual é o próximo passo. Nada de "Ocorreu um erro".</p>
+</div>
+
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px">
+
+<div class="box">
+<img class="mascot" src="/_blob/8d9f62dc316165f0468142eb0a0406f9" alt="" width="120" height="90" style="margin-bottom: 4px">
+<div class="eyebrow">Página não encontrada</div>
+<div class="ttl">O salsicha farejou e não achou nada</div>
+<p class="body">O link pode ter vindo pela metade, ou a página foi apagada no Notion. Confere se copiou até o final.</p>
+<button class="btnp">Colar outro link</button>
+</div>
+
+<div class="box">
+<div style="width: 44px; height: 44px; border-radius: 8px; background: var(--t-blue); display: flex; align-items: center; justify-content: center">
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect class="ico" x="5" y="10.5" width="14" height="10" rx="2" stroke-width="1.6"></rect><path d="M8.5 10.5V8a3.5 3.5 0 017 0v2.5" style="stroke: var(--c-blue)" stroke-width="1.6" stroke-linecap="round"></path></svg>
+</div>
+<div class="eyebrow">Sem acesso</div>
+<div class="ttl">Essa página ficou de fora</div>
+<p class="body">Quando você conectou o Notion, ela não estava entre as páginas liberadas. Dá pra incluir agora, leva uns segundos.</p>
+<button class="btnp">Escolher mais páginas</button>
+</div>
+
+<div class="box">
+<div style="width: 44px; height: 44px; border-radius: 8px; background: var(--t-green); display: flex; align-items: center; justify-content: center">
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path class="ico" d="M12 21V11" stroke-width="1.6" stroke-linecap="round"></path><path d="M12 11c0-3 2-5 5-5 0 3-2 5-5 5zM12 13c0-2.5-1.7-4-4-4 0 2.5 1.7 4 4 4z" style="stroke: var(--c-green)" stroke-width="1.6" stroke-linejoin="round"></path></svg>
+</div>
+<div class="eyebrow">Página sem estrutura</div>
+<div class="ttl">Por enquanto, só tem o tronco</div>
+<p class="body">Essa página é um texto corrido. Pra ganhar galhos, ela precisa de títulos, toggles ou subpáginas.</p>
+<button class="btns">Ver como organizar no Notion</button>
+</div>
+
+<div class="box">
+<img class="mascot" src="/_blob/4c11e2ca06f0999d449a4995bdaef4f2" alt="" width="68" height="90" style="margin-bottom: 4px">
+<div class="eyebrow">Notion lento ou fora do ar</div>
+<div class="ttl">O feitiço não pegou dessa vez</div>
+<p class="body">O Notion demorou demais pra responder. Acontece com páginas grandes. Tenta de novo em alguns segundos.</p>
+<button class="btnp">Tentar de novo</button>
+</div>
+
+<div class="box" style="background: var(--side); gap: 14px">
+<div class="eyebrow">Avisos rápidos (canto da tela)</div>
+<div class="toast">
+<svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+PNG baixado. Confere na sua pasta de downloads.
+</div>
+<div class="toast">
+<svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M13 8a5 5 0 01-8.6 3.5M3 8a5 5 0 018.6-3.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"></path></svg>
+Mapa atualizado com o que mudou no Notion.
+</div>
+<div class="toast">
+<span style="width: 8px; height: 8px; border-radius: 4px; background: var(--c-green)"></span>
+Notion conectado. Agora é só colar o link.
+</div>
+</div>
+
+<div class="box" style="background: var(--side); gap: 14px">
+<div class="eyebrow">Dicas ao passar o mouse</div>
+<div style="display: flex; flex-direction: column; align-items: flex-start; gap: 6px">
+<span style="padding: 6px 10px; border-radius: 6px; background: var(--tipbg); color: var(--tipfg); font-size: 12px">Desenhe um mapa primeiro, aí ele aparece aqui pra baixar</span>
+<span style="font-size: 12px; color: var(--muted)">no botão de baixar, quando ainda não tem mapa</span>
+</div>
+<div style="display: flex; flex-direction: column; align-items: flex-start; gap: 6px">
+<span style="padding: 6px 10px; border-radius: 6px; background: var(--tipbg); color: var(--tipfg); font-size: 12px">3 tópicos fechados. Clique no + pra abrir o galho</span>
+<span style="font-size: 12px; color: var(--muted)">no selo + de um galho recolhido</span>
+</div>
+</div>
+</div>
+
+<div>
+<h2 style="margin: 8px 0 12px; font-size: 20px; font-weight: 700">Antes e depois</h2>
+<div style="display: grid; grid-template-columns: 220px repeat(2, minmax(0, 1fr)); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; font-size: 13px">
+<div style="padding: 8px 14px; background: var(--side); font-weight: 600; color: var(--muted)">Onde</div>
+<div style="padding: 8px 14px; background: var(--side); font-weight: 600; color: var(--muted)">Hoje</div>
+<div style="padding: 8px 14px; background: var(--side); font-weight: 600; color: var(--muted)">Proposta</div>
+<div class="cell" style="color: var(--muted)">Título da tela vazia</div><div class="cell old">Seu Notion em forma de mapa</div><div class="cell">Que página vamos desenhar hoje?</div>
+<div class="cell" style="color: var(--muted)">Texto de apoio</div><div class="cell old">Cole o ID de uma página no campo lá em cima e clique em Gerar mapa.</div><div class="cell">Cole o link de uma página do Notion. Cada título vira um galho, cada subpágina vira um ramo.</div>
+<div class="cell" style="color: var(--muted)">Campo desligado</div><div class="cell old">Entre com o Notion para gerar um mapa</div><div class="cell">Conecte seu Notion primeiro. Na hora de liberar, você escolhe quais páginas o app pode ler.</div>
+<div class="cell" style="color: var(--muted)">Botões principais</div><div class="cell old">Gerar mapa / Entrar com o Notion</div><div class="cell">Desenhar mapa / Conectar meu Notion</div>
+<div class="cell" style="color: var(--muted)">Barra do mapa</div><div class="cell old">Expandir tudo / Recolher tudo</div><div class="cell">Abrir tudo / Fechar tudo</div>
+<div class="cell" style="color: var(--muted)">Espaçamento</div><div class="cell old">Compacto / Normal / Amplo</div><div class="cell">Respiro entre os galhos: Junto / Normal / Folgado</div>
+<div class="cell" style="color: var(--muted)">Exportar</div><div class="cell old">Baixar PNG / Baixar SVG</div><div class="cell">Levar pra fora: Baixar como imagem (PNG) / Baixar editável (SVG)</div>
+<div class="cell" style="color: var(--muted)">Tema</div><div class="cell old">Escuro / Claro</div><div class="cell">Interruptor "Modo escuro", igual ao do Notion</div>
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"dark":{"editor":"boolean","default":false},"$preview":{"width":1440,"height":1180}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const dark = this.props.dark ?? false;
+    const t = dark ? {
+      bg: '#191919', side: '#202020', text: '#D4D4D4', muted: '#9B9B9B', border: '#2F2F2F', primary: '#1A73D4', tipbg: '#2F2F2F', tipfg: '#E6E6E4',
+      mfilter: 'invert(1) brightness(.86)', ink: '#E6E3DE', face: '#1F1E1C', cat: '#45C4D9', belly: '#D9F5FA', hat: '#8E6FD8', dog: '#EFE5D6', ear: '#CDBBA2', det: '#8E8476',
+      'c-blue': '#5E9FE0', 'c-green': '#4DAB7A', 't-blue': '#143A4E', 't-green': '#243D30'
+    } : {
+      bg: '#FFFFFF', side: '#F7F7F5', text: '#37352F', muted: '#73726E', border: '#E9E9E7', primary: '#0B6BCB', tipbg: '#2F2E2B', tipfg: '#FFFFFF',
+      mfilter: 'none', ink: '#1F1E1C', face: '#1F1E1C', cat: '#F59A45', belly: '#FFF1E2', hat: '#6E56B5', dog: '#2B2927', ear: '#4B4743', det: '#8A847B',
+      'c-blue': '#337EA9', 'c-green': '#448361', 't-blue': '#E7F3F8', 't-green': '#EDF3EC'
+    };
+    return { vars: Object.keys(t).map((k) => '--' + k + ': ' + t[k]).join('; ') + ';' };
+  }
+}
+</script>
+</body>
+</html>

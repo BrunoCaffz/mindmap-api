@@ -1,0 +1,330 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Mapa pronto</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+a{color:var(--primary)}
+.row,.tb{transition:background-color 120ms ease-out}
+.row:hover,.tb:hover{background:var(--hover)}
+.knob{transition:transform 200ms cubic-bezier(.3,1.3,.5,1)}
+.nd{position:absolute;display:flex;flex-direction:column;align-items:center;width:150px;padding:0;border:0;background:transparent;color:var(--text);font:inherit}
+.nd:focus-visible{outline:2px solid var(--root);outline-offset:4px;border-radius:8px}
+.pop{display:flex;flex-direction:column;align-items:center;transform:scale(0);opacity:0;animation:pop 520ms cubic-bezier(.3,1.5,.5,1) forwards}
+.circ{position:relative;box-sizing:border-box;border-radius:50%;transition:transform 180ms cubic-bezier(.3,1.5,.5,1), box-shadow 180ms ease-out}
+.nd:hover .circ{transform:scale(1.12)}
+.nd:active .circ{transform:scale(.94)}
+.ln{stroke-dasharray:400;stroke-dashoffset:400;stroke-linecap:round;animation:draw 900ms cubic-bezier(.4,0,.2,1) forwards}
+.sb-blue{stroke:var(--c-blue)}.sb-purple{stroke:var(--c-purple)}.sb-green{stroke:var(--c-green)}.sb-orange{stroke:var(--c-orange)}.sb-pink{stroke:var(--c-pink)}.sb-red{stroke:var(--c-red)}.sb-yellow{stroke:var(--c-yellow)}.sb-brown{stroke:var(--c-brown)}
+.toast{animation:toast 5s cubic-bezier(.2,.8,.2,1) 1.2s both}
+@keyframes toast{0%{opacity:0;transform:translate(-50%,-8px)}8%,85%{opacity:1;transform:translate(-50%,0)}100%{opacity:0;transform:translate(-50%,-4px)}}
+.peek{animation:peek 280ms cubic-bezier(.2,.8,.2,1)}
+@keyframes peek{from{opacity:0;transform:translateX(16px)}to{opacity:1;transform:none}}
+@keyframes pop{to{transform:scale(1);opacity:1}}
+@keyframes draw{to{stroke-dashoffset:0}}
+input::placeholder{color:var(--muted)}
+input:focus{outline:none}
+@media (hover:hover) and (pointer:fine){.nocur,.nocur *{cursor:none!important}}
+@media (hover:none){.cur{display:none}}
+.cur{position:fixed;left:0;top:0;pointer-events:none;mix-blend-mode:difference;z-index:9999}
+.cring,.cdot{width:0;height:0;opacity:0;transition:opacity 200ms}
+.px{position:absolute;left:-1px;top:-1px;width:2px;height:2px;background:#F2EDE8;will-change:transform,opacity}
+.cdot .px{left:-2px;top:-2px;width:4px;height:4px;border-radius:1px}
+@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}.pop{transform:none;opacity:1}.ln{stroke-dashoffset:0}}
+</style>
+</helmet>
+<div class="nocur" onMouseMove="{{onMove}}" onMouseOver="{{onOver}}" onMouseLeave="{{onLeave}}" onMouseDown="{{onDown}}" onMouseUp="{{onUp}}" style="{{vars}} min-height: 900px; display: flex; flex-wrap: wrap; background: var(--bg); color: var(--text); font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, &quot;Segoe UI Variable Text&quot;, &quot;Segoe UI&quot;, Helvetica, sans-serif; font-size: 14px; line-height: 1.5">
+
+<nav aria-label="Opções do mapa" style="flex: 1 1 240px; max-width: 100%; box-sizing: border-box; background: var(--side); border-right: 1px solid var(--border); padding: 8px 8px 12px; display: flex; flex-direction: column; gap: 2px">
+<div style="display: flex; align-items: center; gap: 8px; height: 40px; padding: 0 8px; font-weight: 600">
+<span style="width: 22px; height: 22px; border-radius: 5px; background: var(--text); display: inline-flex; align-items: center; justify-content: center"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8c2.5 0 3-4 6-4M3 8c2.5 0 3 4 6 4M9 4h3M9 12h3" style="stroke: var(--bg)" stroke-width="1.7" stroke-linecap="round"></path></svg></span>
+Notion Mindmap
+</div>
+<div style="margin: 18px 8px 4px; font-size: 12px; font-weight: 600; color: var(--muted)">Formato</div>
+<button class="row" aria-pressed="true" style="height: 36px; padding: 0 8px; border: 0; border-radius: 6px; background: var(--active); color: var(--text); font: inherit; font-weight: 600; text-align: left">Mapa mental</button>
+<button class="row" style="height: 36px; padding: 0 8px; border: 0; border-radius: 6px; background: transparent; color: var(--text); font: inherit; text-align: left">Árvore</button>
+<button class="row" style="height: 36px; padding: 0 8px; border: 0; border-radius: 6px; background: transparent; color: var(--text); font: inherit; text-align: left">Radial</button>
+<button class="row" style="height: 36px; padding: 0 8px; border: 0; border-radius: 6px; background: transparent; color: var(--text); font: inherit; text-align: left">Bolhas</button>
+<div style="flex: 1; min-height: 40px"></div>
+<div style="margin: 0 8px 4px; font-size: 12px; font-weight: 600; color: var(--muted)">Levar pra fora</div>
+<button class="row" style="display: flex; align-items: center; gap: 10px; height: 36px; padding: 0 8px; border: 0; border-radius: 6px; background: transparent; color: var(--text); font: inherit; text-align: left">
+<svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 2.5v8M4.5 7.5L8 11l3.5-3.5M3 13.5h10" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+Baixar como imagem (PNG)
+</button>
+<button class="row" style="display: flex; align-items: center; gap: 10px; height: 36px; padding: 0 8px; border: 0; border-radius: 6px; background: transparent; color: var(--text); font: inherit; text-align: left">
+<svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M5.5 5L2.5 8l3 3M10.5 5l3 3-3 3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+Baixar editável (SVG)
+</button>
+<button class="row" role="switch" aria-checked="{{darkStr}}" onClick="{{toggleDark}}" style="display: flex; align-items: center; gap: 10px; height: 40px; margin-top: 6px; padding: 0 8px; border: 0; border-radius: 6px; background: transparent; color: var(--text); font: inherit; text-align: left">
+<svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M13 9.5A5.5 5.5 0 116.5 3a4.5 4.5 0 006.5 6.5z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"></path></svg>
+<span style="flex: 1">Modo escuro</span>
+<span style="width: 30px; height: 18px; border-radius: 9px; background: {{trackBg}}; position: relative; display: inline-block">
+<span class="knob" style="position: absolute; top: 2px; left: 2px; width: 14px; height: 14px; border-radius: 7px; background: #FFFFFF; box-shadow: 0 1px 2px rgba(0,0,0,.2); transform: {{knob}}"></span>
+</span>
+</button>
+</nav>
+
+<main style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column">
+<header style="height: 48px; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 0 12px 0 16px; border-bottom: 1px solid var(--border); flex-wrap: wrap">
+<div style="display: flex; align-items: center; gap: 6px; color: var(--muted); min-width: 0">
+<span>Mapas</span><span aria-hidden="true">/</span><span style="color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis">IAM - Identity and Access Management</span>
+<span style="margin-left: 6px; font-size: 12px; white-space: nowrap">Lido do Notion agora há pouco</span>
+</div>
+<button class="tb" style="display: flex; align-items: center; gap: 6px; height: 36px; padding: 0 12px; border: 0; border-radius: 6px; background: transparent; color: var(--text); font: inherit">
+<svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M13 8a5 5 0 01-8.6 3.5M3 8a5 5 0 018.6-3.5M11.5 2v2.8H8.7M4.5 14v-2.8h2.8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+Puxar mudanças do Notion
+</button>
+</header>
+
+<div style="flex: 1; display: flex; flex-wrap: wrap; min-height: 0">
+<div style="flex: 999 1 560px; min-width: 0; position: relative; overflow: auto; background-color: var(--canvas); background-image: radial-gradient(var(--grid) 1px, transparent 1px); background-size: 20px 20px; min-height: 850px">
+
+<div style="position: absolute; top: 12px; left: 12px; z-index: 2; display: flex; flex-direction: column; gap: 8px">
+<div style="display: flex; align-items: center; gap: 4px; width: 300px; height: 40px; box-sizing: border-box; padding: 0 4px 0 12px; border-radius: 8px; background: var(--bg); border: 1px solid var(--border); box-shadow: 0 2px 8px rgba(15,15,15,.06)">
+<svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true" style="color: var(--muted)"><circle cx="7" cy="7" r="4.5" stroke="currentColor" stroke-width="1.4"></circle><path d="M10.5 10.5L14 14" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"></path></svg>
+<input aria-label="Buscar no mapa" placeholder="Buscar por título" style="flex: 1; min-width: 0; height: 36px; border: 0; background: transparent; color: var(--text); font: inherit; font-size: 16px">
+<button class="tb" aria-label="Resultado anterior" style="width: 32px; height: 32px; border: 0; border-radius: 6px; background: transparent; color: var(--muted)">&#8593;</button>
+<button class="tb" aria-label="Próximo resultado" style="width: 32px; height: 32px; border: 0; border-radius: 6px; background: transparent; color: var(--muted)">&#8595;</button>
+</div>
+<div style="display: flex; align-items: center; gap: 2px; padding: 4px; border-radius: 8px; background: var(--bg); border: 1px solid var(--border); box-shadow: 0 2px 8px rgba(15,15,15,.06)">
+<button class="tb" style="height: 32px; padding: 0 10px; border: 0; border-radius: 6px; background: transparent; color: var(--text); font: inherit; font-size: 13px">Abrir tudo</button>
+<button class="tb" style="height: 32px; padding: 0 10px; border: 0; border-radius: 6px; background: transparent; color: var(--text); font: inherit; font-size: 13px">Fechar tudo</button>
+<span style="width: 1px; height: 18px; background: var(--border); margin: 0 4px"></span>
+<span style="font-size: 13px; color: var(--muted); padding: 0 4px">Níveis</span>
+<sc-for list="{{levels}}" as="lv" hint-placeholder-count="4">
+<button class="tb" onClick="{{lv.pick}}" aria-pressed="{{lv.pressed}}" style="width: 32px; height: 32px; border: 0; border-radius: 6px; background: {{lv.bg}}; color: var(--text); font: inherit; font-size: 13px; font-weight: {{lv.fw}}">{{lv.n}}</button>
+</sc-for>
+</div>
+</div>
+
+<div class="toast" role="status" style="position: absolute; top: 16px; left: 50%; z-index: 3; display: flex; align-items: center; gap: 8px; padding: 8px 14px; border-radius: 8px; background: var(--tipbg); color: var(--tipfg); font-size: 13px; box-shadow: 0 6px 20px rgba(0,0,0,.18); white-space: nowrap">
+<svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+Mapa pronto. Clique num galho pra espiar o que tem dentro.
+</div>
+
+<div style="position: relative; width: 920px; height: 740px; margin: 96px auto 40px">
+<svg width="920" height="740" viewBox="0 0 920 740" fill="none" aria-hidden="true" style="position: absolute; inset: 0">
+<path class="ln sb-blue" stroke-width="2" style="animation-delay: .1s" d="M460 330 L300 170"></path>
+<path class="ln sb-purple" stroke-width="2" style="animation-delay: .15s" d="M460 330 L640 160"></path>
+<path class="ln sb-green" stroke-width="2" style="animation-delay: .2s" d="M460 330 L740 330"></path>
+<path class="ln sb-yellow" stroke-width="2" style="animation-delay: .25s" d="M460 330 L680 510"></path>
+<path class="ln sb-orange" stroke-width="2" style="animation-delay: .3s" d="M460 330 L500 580"></path>
+<path class="ln sb-pink" stroke-width="2" style="animation-delay: .35s" d="M460 330 L390 470"></path>
+<path class="ln sb-brown" stroke-width="2" style="animation-delay: .4s" d="M460 330 L250 540"></path>
+<path class="ln sb-red" stroke-width="2" style="animation-delay: .45s" d="M460 330 L160 330"></path>
+<path class="ln sb-blue" stroke-width="1.4" style="animation-delay: .6s" d="M300 170 L200 90 M300 170 L300 60 M300 170 L400 90 M300 170 L175 175"></path>
+<path class="ln sb-purple" stroke-width="1.4" style="animation-delay: .65s" d="M640 160 L560 60 M640 160 L690 50 M640 160 L770 130"></path>
+<path class="ln sb-green" stroke-width="1.4" style="animation-delay: .7s" d="M740 330 L860 250 M740 330 L860 420"></path>
+<path class="ln sb-orange" stroke-width="1.4" style="animation-delay: .75s" d="M500 580 L410 660 M500 580 L610 660"></path>
+<path class="ln sb-brown" stroke-width="1.4" style="animation-delay: .8s" d="M250 540 L170 620"></path>
+<path class="ln sb-red" stroke-width="1.4" style="animation-delay: .85s" d="M160 330 L90 250 M160 330 L50 330 M160 330 L80 420 M160 330 L170 450"></path>
+</svg>
+<sc-for list="{{nodes}}" as="n" hint-placeholder-count="27">
+<button class="nd" onClick="{{n.pick}}" aria-pressed="{{n.pressed}}" style="left: {{n.x}}px; top: {{n.y}}px; transform: {{n.tf}}">
+<span class="pop" style="animation-delay: {{n.delay}}">
+<span class="circ" style="width: {{n.d}}px; height: {{n.d}}px; background: {{n.fill}}; border: {{n.bw}} solid {{n.c}}; box-shadow: {{n.shadow}}">
+<sc-if value="{{n.badge}}" hint-placeholder-val="{{false}}">
+<span style="position: absolute; top: -5px; right: -7px; width: 15px; height: 15px; box-sizing: border-box; border-radius: 8px; background: var(--bg); border: 1px solid var(--border); color: var(--muted); font-size: 11px; line-height: 13px; text-align: center">{{n.badgeText}}</span>
+</sc-if>
+</span>
+<span style="margin-top: 6px; max-width: 150px; text-align: center; font-size: {{n.fs}}; font-weight: {{n.fw}}; color: {{n.tc}}; line-height: 1.3">{{n.label}}</span>
+</span>
+</button>
+</sc-for>
+</div>
+
+<div style="position: absolute; left: 12px; bottom: 12px; display: flex; flex-direction: column; gap: 2px; padding: 4px; border-radius: 8px; background: var(--bg); border: 1px solid var(--border); box-shadow: 0 2px 8px rgba(15,15,15,.06)">
+<button class="tb" aria-label="Aumentar zoom" style="width: 36px; height: 36px; border: 0; border-radius: 6px; background: transparent; color: var(--text); font-size: 18px">+</button>
+<button class="tb" aria-label="Diminuir zoom" style="width: 36px; height: 36px; border: 0; border-radius: 6px; background: transparent; color: var(--text); font-size: 18px">&#8722;</button>
+<button class="tb" aria-label="Caber na tela" style="width: 36px; height: 36px; border: 0; border-radius: 6px; background: transparent; color: var(--text); display: inline-flex; align-items: center; justify-content: center">
+<svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M2.5 6V2.5H6M10 2.5h3.5V6M13.5 10v3.5H10M6 13.5H2.5V10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+</button>
+</div>
+
+<div aria-label="Minimapa" role="img" style="position: absolute; right: 12px; bottom: 12px; width: 184px; height: 124px; border-radius: 8px; background: var(--bg); border: 1px solid var(--border); box-shadow: 0 2px 8px rgba(15,15,15,.06); overflow: hidden">
+<svg width="184" height="124" viewBox="0 0 920 740" fill="none" aria-hidden="true" preserveAspectRatio="xMidYMid meet">
+<rect x="120" y="40" width="680" height="560" rx="16" style="fill: var(--hover); stroke: var(--muted)" stroke-width="6"></rect>
+<circle cx="460" cy="330" r="34" style="fill: var(--root)"></circle>
+<circle cx="300" cy="170" r="22" style="fill: var(--c-blue)"></circle><circle cx="640" cy="160" r="22" style="fill: var(--c-purple)"></circle>
+<circle cx="740" cy="330" r="22" style="fill: var(--c-green)"></circle><circle cx="680" cy="510" r="22" style="fill: var(--c-yellow)"></circle>
+<circle cx="500" cy="580" r="22" style="fill: var(--c-orange)"></circle><circle cx="390" cy="470" r="22" style="fill: var(--c-pink)"></circle>
+<circle cx="250" cy="540" r="22" style="fill: var(--c-brown)"></circle><circle cx="160" cy="330" r="22" style="fill: var(--c-red)"></circle>
+</svg>
+</div>
+</div>
+
+<sc-if value="{{hasPeek}}" hint-placeholder-val="{{true}}">
+<aside class="peek" aria-label="Espiada da página" style="flex: 1 1 340px; max-width: 100%; box-sizing: border-box; border-left: 1px solid var(--border); background: var(--bg); padding: 12px 20px 24px; display: flex; flex-direction: column; gap: 14px">
+<div style="display: flex; align-items: center; justify-content: space-between">
+<span style="font-size: 12px; color: var(--muted)">{{peek.crumb}}</span>
+<button class="tb" aria-label="Fechar espiada" onClick="{{closePeek}}" style="width: 36px; height: 36px; border: 0; border-radius: 6px; background: transparent; color: var(--muted); display: inline-flex; align-items: center; justify-content: center">
+<svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"></path></svg>
+</button>
+</div>
+<span style="width: 44px; height: 44px; box-sizing: border-box; border-radius: 50%; background: {{peek.tint}}; border: 3px solid {{peek.c}}"></span>
+<h2 style="margin: 0; font-size: 26px; line-height: 1.2; font-weight: 700; letter-spacing: -0.01em">{{peek.title}}</h2>
+<div style="display: grid; grid-template-columns: 110px 1fr; row-gap: 6px; font-size: 13px">
+<span style="color: var(--muted)">Galho</span><span><span style="padding: 1px 6px; border-radius: 4px; background: {{peek.tint}}; color: {{peek.c}}">{{peek.branch}}</span></span>
+<span style="color: var(--muted)">Dentro dele</span><span>{{peek.inside}}</span>
+</div>
+<div style="height: 1px; background: var(--border)"></div>
+<sc-for list="{{peek.lines}}" as="l" hint-placeholder-count="3">
+<div style="display: flex; gap: 8px; align-items: baseline"><span aria-hidden="true" style="color: var(--muted)">&#8226;</span><span>{{l}}</span></div>
+</sc-for>
+<div style="flex: 1"></div>
+<a href="#" style="display: inline-flex; align-items: center; justify-content: center; gap: 6px; height: 40px; border-radius: 6px; border: 1px solid var(--border); color: var(--text); text-decoration: none; font-weight: 600">
+Abrir esta página no Notion
+<svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M6 3h7v7M13 3L5 11" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+</a>
+</aside>
+</sc-if>
+</div>
+</main>
+
+<div class="cur cring" aria-hidden="true"><sc-for list="{{curPts}}" as="p" hint-placeholder-count="20"><span class="px"></span></sc-for></div>
+<div class="cur cdot" aria-hidden="true"><span class="px"></span></div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"dark":{"editor":"boolean","default":false},"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  theme(dark) {
+    const t = dark ? {
+      bg: '#191919', side: '#202020', text: '#D4D4D4', muted: '#9B9B9B', border: '#2F2F2F', hover: '#2C2C2C', active: '#323232', canvas: '#1C1C1C', grid: '#2E2E2E',
+      primary: '#1A73D4', tipbg: '#2F2F2F', tipfg: '#E6E6E4', root: '#2F86E0',
+      'c-blue': '#5E9FE0', 'c-purple': '#A47BD6', 'c-green': '#4DAB7A', 'c-yellow': '#D7A43C', 'c-orange': '#E0873E', 'c-pink': '#D669A5', 'c-red': '#E66A64', 'c-brown': '#B78A72',
+      't-blue': '#143A4E', 't-purple': '#3C2D49', 't-green': '#243D30', 't-yellow': '#564328', 't-orange': '#5C3B23', 't-pink': '#4E2C3C', 't-red': '#522E2A', 't-brown': '#4A3228'
+    } : {
+      bg: '#FFFFFF', side: '#F7F7F5', text: '#37352F', muted: '#73726E', border: '#E9E9E7', hover: '#EFEFED', active: '#E8E8E5', canvas: '#FBFBFA', grid: '#E3E2DE',
+      primary: '#0B6BCB', tipbg: '#2F2E2B', tipfg: '#FFFFFF', root: '#2383E2',
+      'c-blue': '#337EA9', 'c-purple': '#9065B0', 'c-green': '#448361', 'c-yellow': '#CB912F', 'c-orange': '#D9730D', 'c-pink': '#C14C8A', 'c-red': '#D44C47', 'c-brown': '#9F6B53',
+      't-blue': '#E7F3F8', 't-purple': '#F4F0F7', 't-green': '#EDF3EC', 't-yellow': '#FBF3DB', 't-orange': '#FBECDD', 't-pink': '#FAF1F5', 't-red': '#FDEBEC', 't-brown': '#F4EEEE'
+    };
+    return { t, vars: Object.keys(t).map((k) => '--' + k + ': ' + t[k]).join('; ') + ';' };
+  }
+  startCursor() {
+    const reduce = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+    this.cx = { mx: -100, my: -100, rx: -100, ry: -100, r: 14, t: 0, on: false, hot: false, down: false };
+    let last = performance.now();
+    const tick = (now) => {
+      const c = this.cx;
+      const dt = Math.min(0.05, (now - last) / 1000); last = now; c.t += dt;
+      const ring = document.querySelector('.cring');
+      const dot = document.querySelector('.cdot');
+      if (ring && dot) {
+        const follow = reduce ? 1 : 1 - Math.pow(0.0005, dt);
+        c.rx += (c.mx - c.rx) * follow; c.ry += (c.my - c.ry) * follow;
+        const target = c.down ? 8 : c.hot ? 22 : 14;
+        c.r += (target - c.r) * (1 - Math.pow(0.001, dt));
+        ring.style.opacity = dot.style.opacity = c.on ? '1' : '0';
+        ring.style.transform = 'translate3d(' + c.rx + 'px,' + c.ry + 'px,0)';
+        dot.style.transform = 'translate3d(' + c.mx + 'px,' + c.my + 'px,0)';
+        const pts = ring.querySelectorAll('.px');
+        const n = pts.length;
+        for (let i = 0; i < n; i++) {
+          const base = (i / n) * Math.PI * 2;
+          const a = reduce ? base : base + c.t * 1.1;
+          const breathe = reduce ? 0 : Math.sin(c.t * 2.6) * 3 + Math.sin(c.t * 4 + i * 0.9) * 1.2;
+          const rad = c.r + breathe;
+          const x = Math.round((Math.cos(a) * rad) / 2) * 2;
+          const y = Math.round((Math.sin(a) * rad) / 2) * 2;
+          pts[i].style.transform = 'translate(' + x + 'px,' + y + 'px)';
+          pts[i].style.opacity = reduce ? '1' : (0.35 + 0.65 * (0.5 + 0.5 * Math.sin(c.t * 5 + i * 1.7))).toFixed(2);
+        }
+      }
+      this.raf = requestAnimationFrame(tick);
+    };
+    this.raf = requestAnimationFrame(tick);
+  }
+  componentDidMount() { this.startCursor(); }
+  componentWillUnmount() { cancelAnimationFrame(this.raf); }
+  renderVals() {
+    const s = this.state || {};
+    const dark = s.dark ?? (this.props.dark ?? false);
+    const { t, vars } = this.theme(dark);
+    const sel = s.sel === undefined ? 'ak' : s.sel;
+    const level = s.level || 3;
+    const N = (id, label, x, y, color, kind, extra) => ({ id, label, x, y, color, kind, ...(extra || {}) });
+    const raw = [
+      N('root', 'IAM - Identity and Access Management', 460, 330, 'blue', 'root', { kids: true, lines: ['8 tópicos principais, do básico às boas práticas', 'Anotações de estudo pra certificação AWS'], inside: '8 tópicos' }),
+      N('ak', 'Access Keys', 300, 170, 'blue', 'main', { kids: true, inside: '4 tópicos', lines: ['Servem pra acessar a AWS pela CLI, pelos SDKs e pelas APIs', 'Nunca deixe no código-fonte, no GitHub ou em mensagens', 'Entram no Shared Responsibility Model'] }),
+      N('pol', 'IAM política de estruturas', 640, 160, 'purple', 'main', { kids: true, inside: '3 tópicos', lines: ['Version, Id e Statement', 'Cada Statement descreve uma permissão'] }),
+      N('grp', 'IAM Section: Grupos e usuários', 740, 330, 'green', 'main', { kids: true, inside: '2 tópicos', lines: ['Grupos só podem conter usuários, não outros grupos', 'Um usuário pode fazer parte de vários grupos'] }),
+      N('res', 'Resumo rápido', 680, 510, 'yellow', 'main', { more: 3, inside: '3 tópicos fechados', lines: ['Users ficam associados a uma pessoa física', 'Grupos facilitam dar permissões', 'Políticas são documentos JSON'] }),
+      N('sdk', 'O que é a AWS SDK?!', 500, 580, 'orange', 'main', { kids: true, inside: '2 tópicos', lines: ['IAM Guidelines & Best Practices', 'IAM Security Tools'] }),
+      N('cli', 'O que é a AWS CLI?!', 390, 470, 'pink', 'main', { more: 2, inside: '2 tópicos fechados', lines: ['Uma alternativa ao Management Console', 'Pela CLI você acessa as APIs públicas'] }),
+      N('perm', 'Permissões', 250, 540, 'brown', 'main', { kids: true, inside: '1 tópico', lines: ['Política de hierarquia dos IAM'] }),
+      N('st', 'Estrutura de um Statement', 160, 330, 'red', 'main', { kids: true, inside: '4 tópicos', lines: ['Sid, Effect, Action e Resource', 'Tem um exemplo completo de política em JSON'] }),
+      N('ak1', 'AWS CLI', 200, 90, 'blue', 'kid', { parent: 'Access Keys' }), N('ak2', 'SDKs', 300, 60, 'blue', 'kid', { parent: 'Access Keys' }),
+      N('ak3', 'APIs', 400, 90, 'blue', 'kid', { parent: 'Access Keys' }), N('ak4', 'Shared Responsibility Model', 175, 175, 'blue', 'kid', { parent: 'Access Keys', more: 2 }),
+      N('pol1', 'Version', 560, 60, 'purple', 'kid', { parent: 'IAM política de estruturas' }), N('pol2', 'Id', 690, 50, 'purple', 'kid', { parent: 'IAM política de estruturas' }),
+      N('pol3', 'Statement', 770, 130, 'purple', 'kid', { parent: 'IAM política de estruturas' }),
+      N('grp1', 'Grupos facilitam a atribuição de permissões', 860, 250, 'green', 'kid', { parent: 'Grupos e usuários' }),
+      N('grp2', 'Um usuário pode estar em vários grupos', 860, 420, 'green', 'kid', { parent: 'Grupos e usuários' }),
+      N('sdk1', 'IAM Guidelines & Best Practices', 410, 660, 'orange', 'kid', { parent: 'O que é a AWS SDK?!', more: 4 }),
+      N('sdk2', 'IAM Security Tools', 610, 660, 'orange', 'kid', { parent: 'O que é a AWS SDK?!', more: 2 }),
+      N('perm1', 'Política de hierarquia dos IAM', 170, 620, 'brown', 'kid', { parent: 'Permissões' }),
+      N('st1', 'Sid', 90, 250, 'red', 'kid', { parent: 'Estrutura de um Statement' }), N('st2', 'Effect', 50, 330, 'red', 'kid', { parent: 'Estrutura de um Statement' }),
+      N('st3', 'Action', 80, 420, 'red', 'kid', { parent: 'Estrutura de um Statement' }), N('st4', 'Resource', 170, 450, 'red', 'kid', { parent: 'Estrutura de um Statement' })
+    ];
+    let i = 0;
+    const nodes = raw.map((n) => {
+      const on = n.id === sel;
+      const r = n.kind === 'root' ? 30 : n.kind === 'main' ? 20 : 11;
+      const c = 'var(--c-' + n.color + ')';
+      const tint = 'var(--t-' + n.color + ')';
+      const delay = n.kind === 'root' ? 0 : n.kind === 'main' ? 0.15 + (i++) * 0.05 : 0.6 + (i++) * 0.02;
+      return {
+        ...n,
+        d: r * 2,
+        tf: 'translate(-50%,-' + r + 'px)',
+        delay: delay.toFixed(2) + 's',
+        fill: n.kind === 'root' ? 'var(--root)' : tint,
+        c: n.kind === 'root' ? 'transparent' : c,
+        bw: n.kind === 'kid' ? '2px' : '3px',
+        shadow: on ? '0 0 0 5px ' + (n.kind === 'root' ? 'rgba(35,131,226,.25)' : tint) + ', 0 0 0 6px ' + c : 'none',
+        fs: n.kind === 'root' ? '15px' : n.kind === 'main' ? '13px' : '12px',
+        fw: n.kind === 'kid' ? 400 : 700,
+        tc: n.kind === 'kid' ? 'var(--muted)' : 'var(--text)',
+        badge: !!(n.kids || n.more),
+        badgeText: n.more ? '+' : '−',
+        pressed: String(on),
+        pick: () => this.setState({ sel: n.id })
+      };
+    });
+    const cur = raw.find((n) => n.id === sel);
+    const peek = cur ? {
+      title: cur.label,
+      c: 'var(--c-' + cur.color + ')',
+      tint: 'var(--t-' + cur.color + ')',
+      crumb: cur.kind === 'root' ? 'IAM - Identity and Access Management' : 'IAM / ' + (cur.parent || cur.label),
+      branch: cur.parent || cur.label,
+      inside: cur.inside || 'Um bloco de texto',
+      lines: cur.lines || ['Abra no Notion pra ler o bloco inteiro.']
+    } : { title: '', c: 'transparent', tint: 'transparent', crumb: '', branch: '', inside: '', lines: [] };
+    const levels = [1, 2, 3, 4].map((n) => ({ n, pressed: String(n === level), bg: n === level ? t.active : 'transparent', fw: n === level ? 700 : 400, pick: () => this.setState({ level: n }) }));
+    return {
+      vars, nodes, peek, levels,
+      hasPeek: !!cur,
+      closePeek: () => this.setState({ sel: null }),
+      darkStr: String(dark),
+      trackBg: dark ? t.primary : '#D3D1CB',
+      knob: dark ? 'translateX(12px)' : 'translateX(0)',
+      toggleDark: () => this.setState({ dark: !dark }),
+      curPts: Array.from({ length: 20 }, (_, i) => ({ i })),
+      onMove: (e) => { const c = this.cx; if (!c) return; c.mx = e.clientX; c.my = e.clientY; if (!c.on) { c.on = true; c.rx = c.mx; c.ry = c.my; } },
+      onOver: (e) => { const el = e.target; if (this.cx) this.cx.hot = !!(el && el.closest && el.closest('a,button,input,label')); },
+      onLeave: () => { if (this.cx) this.cx.on = false; },
+      onDown: () => { if (this.cx) this.cx.down = true; },
+      onUp: () => { if (this.cx) this.cx.down = false; }
+    };
+  }
+}
+</script>
+</body>
+</html>
