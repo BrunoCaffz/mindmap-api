@@ -1,0 +1,4 @@
+# O Caddy emite o certificado HTTPS sozinho para este host e já envia X-Forwarded-Proto/For à API.
+{$API_HOST} {
+	reverse_proxy api:8080
+}

@@ -1,0 +1,58 @@
+# Produção numa VPS única. Uso: docker compose -f docker-compose.prod.yml --env-file .env.prod up -d --build
+# Só o Caddy publica portas (80 e 443). O banco e a API ficam na rede interna do Compose.
+services:
+  db:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-mindmap}
+      POSTGRES_USER: ${POSTGRES_USER:-mindmap}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?defina POSTGRES_PASSWORD no .env.prod}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build: ./backend/mindmap-api
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DB_URL: jdbc:postgresql://db:5432/${POSTGRES_DB:-mindmap}
+      DB_USER: ${POSTGRES_USER:-mindmap}
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      SESSION_COOKIE_SECURE: "true"
+      NOTION_CLIENT_ID: ${NOTION_CLIENT_ID:?}
+      NOTION_CLIENT_SECRET: ${NOTION_CLIENT_SECRET:?}
+      TOKEN_ENCRYPTION_KEY: ${TOKEN_ENCRYPTION_KEY:?}
+      NOTION_REDIRECT_URI: ${NOTION_REDIRECT_URI:?}
+      APP_FRONTEND_URL: ${APP_FRONTEND_URL:?}
+    deploy:
+      resources:
+        limits:
+          memory: 768m
+
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    depends_on:
+      - api
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      API_HOST: ${API_HOST:?defina API_HOST no .env.prod}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+
+volumes:
+  pgdata:
+  caddy_data:
+  caddy_config:

@@ -2,9 +2,9 @@ spring:
   application:
     name: mindmap-api
   datasource:
-    url: jdbc:postgresql://localhost:5433/mindmap
-    username: mindmap
-    password: mindmap
+    url: ${DB_URL:jdbc:postgresql://localhost:5433/mindmap}
+    username: ${DB_USER:mindmap}
+    password: ${DB_PASSWORD:mindmap}
   jpa:
     open-in-view: false
   session:
@@ -13,6 +13,8 @@ spring:
     timeout: 8h
 
 server:
+  # Atrás do Caddy: respeita X-Forwarded-Proto/Host (esquema https correto). A API não é publicada, só o proxy a alcança.
+  forward-headers-strategy: framework
   servlet:
     session:
       cookie:
