@@ -34,7 +34,7 @@
 </div>
 
 > [!NOTE]
-> The live demo runs in **localhost**: see how to runs in
+> The live demo runs in **localhost**: see how to run in
 > [Getting Started](#getting-started).
 
 <div align="center">
