@@ -10,7 +10,6 @@
     <br />
     Sign in with Notion, pick a page, and see its whole structure at once. Spring Boot on the back end, Next.js and React Flow on the front end.
     <br />
-    <a href="./README.pt-BR.md">Leia em português</a>
   </p>
 
   <p align="center">
