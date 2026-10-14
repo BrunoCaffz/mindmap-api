@@ -21,7 +21,7 @@
   </p>
 
   <p align="center">
-    <a href="https://mindmap-notion.vercel.app">Live Demo</a>
+    <a href="https://www.ramificamap.com.br/">Live Demo</a>
     ·
     <a href="https://github.com/BrunoCaffz/mindmap-api/issues/new?labels=bug">Report Bug</a>
     ·
