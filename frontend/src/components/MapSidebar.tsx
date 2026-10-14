@@ -48,6 +48,8 @@ interface MapSidebarProps {
   canExport: boolean;
   // Volta para a tela de começo. Fica de fora na demonstração, que não tem o que digitar.
   onNewMap?: () => void;
+  // Texto do botão que volta à tela inicial. Padrão: "Novo mapa".
+  newMapLabel?: string;
   onToast: (message: string) => void;
   // No celular a barra é uma gaveta: aberta pelo menu do cabeçalho e fechada por aqui.
   drawerOpen: boolean;
@@ -64,6 +66,7 @@ export function MapSidebar({
   mapTitle,
   canExport,
   onNewMap,
+  newMapLabel = "Novo mapa",
   onToast,
   drawerOpen,
   onCloseDrawer,
@@ -111,7 +114,7 @@ export function MapSidebar({
             className={`${ROW} text-muted hover:text-ink`}
           >
             <PlusIcon />
-            Novo mapa
+            {newMapLabel}
           </button>
         )}
 

@@ -1,6 +1,7 @@
 import type { ReactNode, RefObject } from "react";
 import type { LayoutMode } from "@/lib/layout";
 import { ErrorCard, type LoadError } from "./ErrorCard";
+import { REPOSITORY_URL } from "@/lib/demo";
 import { AlertIcon, LinkIcon, LockIcon } from "./icons";
 import { Mascot } from "./Mascot";
 
@@ -179,6 +180,8 @@ interface EmptyMapStateProps {
   idError: string | null;
   loadError: LoadError | null;
   onShowExample: (mode: LayoutMode) => void;
+  // Demonstração: sem login e sem backend, então o campo de ID dá lugar a um aviso.
+  demo?: boolean;
 }
 
 export function EmptyMapState({
@@ -191,6 +194,7 @@ export function EmptyMapState({
   idError,
   loadError,
   onShowExample,
+  demo = false,
 }: EmptyMapStateProps) {
   const needsConnect = !canGenerate && !sessionLoading;
   const ready = canGenerate && pageId.trim() !== "";
@@ -204,10 +208,32 @@ export function EmptyMapState({
           Que página vamos desenhar hoje?
         </h1>
         <p className="mb-7 max-w-[560px] text-base text-muted">
-          Cole o ID de uma página do Notion. Cada título vira um galho, cada subpágina vira um ramo, e você enxerga a
-          página inteira de uma vez só.
+          {demo
+            ? "Aqui você pode explorar um mapa de exemplo, com notas de estudo fictícias. Cada título vira um galho e você enxerga a página inteira de uma vez só."
+            : "Cole o ID de uma página do Notion. Cada título vira um galho, cada subpágina vira um ramo, e você enxerga a página inteira de uma vez só."}
         </p>
 
+        {demo ? (
+          <p
+            role="note"
+            className="flex items-start gap-2 rounded-md border border-line bg-t-blue px-3.5 py-3 text-[14px] text-ink"
+          >
+            <LockIcon width={14} height={14} className="mt-1 flex-none text-c-blue" />
+            <span>
+              Modo demonstração: o login com Notion está desativado nesta versão. Veja o{" "}
+              <a
+                href={`${REPOSITORY_URL}#readme`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-semibold underline underline-offset-2 hover:text-primary"
+              >
+                README
+              </a>{" "}
+              para rodar com sua conta.
+            </span>
+          </p>
+        ) : (
+          <>
         <form
           onSubmit={(e) => {
             e.preventDefault();
@@ -258,6 +284,8 @@ export function EmptyMapState({
             </p>
           )}
         </form>
+          </>
+        )}
 
         {loadError && (
           <ErrorCard

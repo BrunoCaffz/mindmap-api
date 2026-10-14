@@ -1,87 +1,150 @@
 # Notion Mindmap
 
-Cole o ID de uma página do Notion e veja ela virar um mapa mental que dá pra navegar. Comecei pra estudar: minhas anotações de AWS ficam em páginas longas, e um mapa deixa a estrutura visível de uma vez.
+Webapp que transforma uma página do Notion em um mapa mental interativo. Spring Boot no backend, Next.js e React Flow no frontend.
 
-![Mapa gerado a partir de uma página de anotações](docs/img/mindmap-image.jpeg)
+[![CI](https://github.com/BrunoCaffz/mindmap-api/actions/workflows/ci.yml/badge.svg)](https://github.com/BrunoCaffz/mindmap-api/actions/workflows/ci.yml)
 
-**Demo:** mindmap-notion.vercel.app
+**Demo:** [mindmap-notion.vercel.app](https://mindmap-notion.vercel.app) (modo demo, sem login: mostra um mapa de exemplo fictício, sem backend)
 
-## O que já faz
+<!-- TODO: adicionar a imagem docs/img/mapa.png (screenshot do mapa). Até lá, o link abaixo aparece quebrado. -->
+![Mapa gerado a partir de uma página do Notion](docs/img/mapa.png)
 
-- Lê uma página do Notion pela API oficial e converte o conteúdo numa árvore própria: títulos, listas, callouts, colunas, blocos de código e citações.
-- Desenha a árvore com React Flow e layout automático (dagre).
-- Ramos começam recolhidos, com contador de itens escondidos, cor por ramo, busca por título e painel com o texto completo de cada nó.
-- Responde em cerca de 1,8 s numa página longa.
+## Demonstração em vídeo
 
-## Como funciona
+<!-- TODO: colocar o link do vídeo aqui. -->
+[Assistir à demonstração](LINK_DO_VIDEO)
+
+## Por que existe
+
+Comecei pra estudar: minhas anotações de AWS ficam em páginas longas do Notion, e um mapa mostra a estrutura inteira de uma vez.
+
+## Funcionalidades
+
+- Login com o Notion (OAuth2). Cada pessoa autoriza o próprio workspace e o app só lê as páginas que ela liberar.
+- Gera o mapa a partir do ID de uma página. O conteúdo vira uma árvore própria com títulos, listas, callouts, colunas, blocos de código e citações.
+- Quatro layouts (mapa mental, árvore, radial e bolhas) e três espaçamentos.
+- Ramos recolhidos no início, com contador de itens escondidos, cor por ramo e busca por título.
+- Painel com o texto completo de cada nó.
+- Exportação do mapa em PNG e em SVG.
+- Tema claro e escuro.
+- Tela de login, nome do usuário e workspace no cabeçalho, logout e aviso de sessão expirada.
+- Modo demo: o mesmo front, com um mapa de exemplo embutido, sem backend e sem login.
+- Mensagens de erro específicas para ID inválido, página sem acesso, limite do Notion e falha de rede.
+
+## Arquitetura
 
 ```mermaid
 flowchart LR
-    B["Navegador"] -->|"/api/..."| F["Next.js (rewrite)"]
-    F --> C["MindMapController"]
-    C --> S["MindMapService"]
-    S --> NC["NotionClient"]
-    NC -->|"título + markdown"| API[("API do Notion")]
-    S --> P["NotionMarkdownParser"]
-    P --> M["MindMapNode (árvore)"]
-    M --> C
+    subgraph Navegador
+        B["Front (React Flow)"]
+    end
+    subgraph Next["Next.js"]
+        RW["rewrite /api/*"]
+    end
+    subgraph API["Spring Boot"]
+        AC["AuthController"]
+        MC["MindMapController"]
+        MS["MindMapService"]
+        NC["NotionClient"]
+        P["NotionMarkdownParser"]
+        T["MindMapNode (árvore)"]
+        SS[("Postgres: sessões e tokens criptografados")]
+    end
+    N[("API do Notion")]
+
+    B --> RW
+    RW --> AC
+    RW --> MC
+    MC --> MS
+    MS --> NC
+    NC -->|"título + markdown"| N
+    NC --> P
+    P --> T
+    T --> MC
+    MC -->|"JSON"| B
+
+    AC -->|"1. redirect com state"| N
+    N -->|"2. callback com code"| AC
+    AC -->|"3. troca code por token"| N
+    AC -->|"4. grava token cifrado e abre a sessão"| SS
+    MS -->|"lê o token da sessão"| SS
 ```
 
-O frontend só conversa com o meu backend. O backend é o único que conhece o Notion: ele busca o conteúdo, o parser transforma em `MindMapNode` e o front recebe um JSON simples, sem nada do formato do Notion. Se um dia eu aceitar PDF ou markdown local, entra um parser novo que devolve o mesmo `MindMapNode`, e o front nem percebe.
+**Fluxo de leitura.** O front chama `/api/...` na própria origem e o Next repassa ao backend. O `MindMapService` pede ao `NotionClient` o título e o markdown da página, o `NotionMarkdownParser` monta a árvore de `MindMapNode` e o controller devolve um JSON simples. Só o `NotionClient` fala com o Notion. O resto do sistema nunca vê o formato dele.
 
-## Decisões que valem explicar
-
-**Árvore própria em vez de repassar o JSON do Notion.** O Notion entrega uma lista reta de blocos. O mapa precisa de pai e filho. O parser usa uma pilha com o caminho de títulos atual: um título novo desempilha os de nível igual ou maior e vira filho do que sobrou. Parágrafos, código e citações viram a descrição do nó, e só títulos, itens de lista e callouts viram caixinhas, senão o mapa fica ilegível.
-
-**Markdown em vez de blocos: de 11,2 s para 1,8 s.** A primeira versão lia os blocos um a um. Os filhos de callouts, colunas e listas aninhadas não vêm junto, então cada um exige uma chamada nova, e o Notion limita a cerca de 3 requisições por segundo. Numa página real minha, deu 11,2 s. O endpoint de markdown devolve a página inteira numa chamada: cerca de 0,5 s no Notion e 1,8 s na resposta completa do backend. O custo foi escrever um parser de markdown com as extensões do Notion (colunas e callouts viram tags) e perder os ids de bloco. O parser de blocos continua no código como plano B.
-
-**Ids derivados do caminho.** Sem os ids de bloco do Notion, o id de cada nó é calculado a partir do caminho dele (pai, tipo, título e ocorrência entre irmãos). O mesmo conteúdo gera os mesmos ids, o que vai permitir preservar cores e posições quando o mapa for atualizado. O limite: renomear um título muda o id dele e o dos filhos.
-
-As outras decisões ficam em [docs/DECISIONS.md](docs/DECISIONS.md).
+**Fluxo de login.** `GET /api/auth/notion/login` guarda um `state` aleatório na sessão e redireciona para o Notion. No callback, o backend confere o `state`, troca o `code` pelo token, grava o token criptografado no Postgres e abre a sessão. O navegador recebe só o cookie de sessão. A cada leitura, o backend usa a sessão para achar o token da pessoa.
 
 ## Stack
 
-- **Backend:** Java 21, Spring Boot, Spring Security, Spring Session JDBC, Flyway, RestClient, Jackson, JUnit
-- **Frontend:** Next.js, TypeScript, Tailwind, React Flow, dagre
-- **Infra local:** Docker Compose (Postgres)
-- **CI:** GitHub Actions (testes do backend, lint e build do front, gitleaks)
+**Backend:** Java 21, Spring Boot, Spring Security, Spring Session JDBC, Flyway, Postgres, RestClient, Jackson, JUnit.
+
+**Frontend:** Next.js, React, TypeScript, Tailwind, React Flow, dagre (layouts em árvore), d3-force (layout em bolhas), html-to-image (exportação).
+
+## Decisões de segurança e arquitetura
+
+O registro completo, com contexto e custo de cada escolha, está em [docs/DECISIONS.md](docs/DECISIONS.md). O resumo:
+
+- **Sessão no servidor, não JWT.** O navegador recebe um cookie `HttpOnly`, `SameSite=Lax` e `Secure` em produção. A sessão fica no Postgres e expira após 8 horas sem uso. Dá pra encerrar uma sessão de verdade (logout, token revogado).
+- **CSRF ligado.** O token vai no cookie `XSRF-TOKEN` e volta no cabeçalho `X-XSRF-TOKEN`. Sem ele, o POST recebe 403.
+- **Tokens do Notion cifrados em repouso.** AES-256-GCM, com nonce aleatório por registro e usuário e workspace como dado autenticado. A chave vem de `TOKEN_ENCRYPTION_KEY` e o app não sobe sem ela. Não há rotação de chave por enquanto.
+- **O token nunca vai ao front nem aos logs.** `GET /api/me` devolve só o nome do usuário e do workspace.
+- **Defesas no callback do OAuth.** `state` aleatório, de uso único, comparado em tempo constante, e troca do id da sessão antes de autenticar (contra session fixation).
+- **Mesma origem, sem CORS.** O front só fala com o backend pelo rewrite do Next.
+- **Segredos só por variável de ambiente.** O modelo está em [`.env.example`](.env.example). O CI roda o gitleaks no histórico inteiro.
+- **Conteúdo do Notion é dado não confiável.** O front renderiza tudo como texto, sem HTML cru.
+- **Markdown em vez de blocos.** Uma chamada ao Notion em vez de uma por bloco com filhos: de 11,2 s para 1,8 s numa página real.
+- **Ids dos nós derivados do caminho.** O endpoint de markdown não traz ids de bloco. Limite: renomear um título muda o id dele e o dos filhos.
 
 ## Rodando localmente
 
 Precisa de Java 21, Maven, Node 20 ou mais novo e Docker.
 
-1. Suba o Postgres: `docker compose up -d`. Ele guarda as sessões e os tokens.
-2. Gere a chave que criptografa os tokens (sem ela o backend não sobe) e defina as variáveis de ambiente. O modelo, com explicação de cada uma, está em [`.env.example`](.env.example):
+1. **Banco.** `docker compose up -d` sobe o Postgres na porta 5433 (a 5432 costuma estar ocupada por um Postgres local). Ele guarda as sessões e os tokens.
+2. **Integração do Notion.** Em [notion.so/profile/integrations](https://www.notion.so/profile/integrations), crie uma integração **pública** e cadastre o Redirect URI `http://localhost:3000/api/auth/notion/callback`. Copie o client id e o client secret.
+3. **Variáveis de ambiente.** O Spring Boot não lê arquivo `.env` sozinho: defina as variáveis no terminal antes de rodar o backend. O modelo, com a explicação de cada uma, está em [`.env.example`](.env.example). As obrigatórias são `NOTION_CLIENT_ID`, `NOTION_CLIENT_SECRET` e `TOKEN_ENCRYPTION_KEY`. Para gerar a chave:
     - bash: `export TOKEN_ENCRYPTION_KEY="$(openssl rand -base64 32)"`
     - PowerShell: `$b = New-Object byte[] 32; [Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($b); $env:TOKEN_ENCRYPTION_KEY = [Convert]::ToBase64String($b)`
-3. Escolha como o backend lê o Notion:
-    - **Login com o Notion (OAuth2).** Crie uma integração **pública** em [notion.so/profile/integrations](https://www.notion.so/profile/integrations), cadastre o Redirect URI `http://localhost:3000/api/auth/notion/callback` e defina `NOTION_CLIENT_ID` e `NOTION_CLIENT_SECRET`. Cada pessoa entra com a própria conta e o token dela fica criptografado no banco.
-    - **Token pessoal, só para desenvolvimento.** Crie uma integração interna, conecte a página pelo menu `...` > Conexões e defina `NOTION_TOKEN` e `APP_DEV_TOKEN_FALLBACK=true`. Sem usuário logado, o backend usa esse token. Em produção isso fica desligado.
-4. Backend: `cd backend/mindmap-api` e `mvn spring-boot:run` (porta 8080). O Flyway cria as tabelas na primeira subida.
-5. Frontend: `cd frontend`, `npm install` e `npm run dev`, depois abra `localhost:3000`.
+4. **Backend.** `cd backend/mindmap-api` e `mvn spring-boot:run` (porta 8080). O Flyway cria as tabelas na primeira subida.
+5. **Frontend.** `cd frontend`, `npm install` e `npm run dev`, depois abra `localhost:3000` e entre com o Notion. No Notion, libere a página que quer mapear durante a autorização. O ID dela são os 32 caracteres no final da URL.
 
-A tela ainda não tem o botão "Entrar com o Notion". Enquanto isso, para ver o mapa funcionando localmente, use o token pessoal do passo 3. Para testar o login pelo navegador, abra `localhost:3000/api/auth/notion/login`.
+**Sem OAuth, só para desenvolvimento.** Crie uma integração interna, conecte a página pelo menu `...` > Conexões e defina `NOTION_TOKEN` e `APP_DEV_TOKEN_FALLBACK=true` no backend, e `NEXT_PUBLIC_DEV_TOKEN_FALLBACK=true` no front. Sem usuário logado, o backend usa esse token. O padrão é desligado.
 
-Pra copiar o ID de uma página, pegue os 32 caracteres no final da URL dela.
+**Modo demo.** Sem backend, sem banco e sem Notion: `cd frontend`, `NEXT_PUBLIC_DEMO_MODE=true npm run dev` (PowerShell: `$env:NEXT_PUBLIC_DEMO_MODE="true"; npm run dev`). É o mesmo build que roda na Vercel.
 
-Testes: `mvn verify` no backend (não precisa de banco nem de variáveis), `npm run lint` e `npm run build` no frontend.
+## Testes e CI
+
+O GitHub Actions roda em todo push na `main` e em todo pull request:
+
+- **Backend:** `mvn verify`. Testes unitários (parsers, criptografia dos tokens, serviços) e de fatia com `@WebMvcTest` e a cadeia de segurança real (login, `/api/me`, mapa, tratamento de erros). Não precisa de banco nem de variáveis.
+- **Frontend:** `npm ci`, `npm run lint` e `npm run build` com `NEXT_PUBLIC_DEMO_MODE=true`.
+- **Segredos:** gitleaks no histórico inteiro.
+
+Limite conhecido: o teste de contexto completo (`contextLoads`) está desativado porque exige Postgres. Flyway, tabelas de sessão e criptografia gravada foram conferidos à mão com um banco descartável. Testcontainers é o próximo passo para trazer isso ao CI.
+
+## Deploy
+
+O repositório traz [`backend/mindmap-api/Dockerfile`](backend/mindmap-api/Dockerfile), [`docker-compose.prod.yml`](docker-compose.prod.yml) (Postgres, API e Caddy) e [`Caddyfile`](Caddyfile) (HTTPS automático) para subir numa VPS única, com o front na Vercel. Passo a passo e backup em [docs/DEPLOY.md](docs/DEPLOY.md).
+
+O app não fica hospedado 24 horas por custo. O que está no ar é a [demo na Vercel](https://mindmap-notion.vercel.app), que roda sem backend.
+
+## Roadmap
+
+- Salvar os mapas no Postgres (JSONB), com cores e posições editadas.
+- Botão para sincronizar o mapa com o Notion quando a página mudar.
+- Camada de IA opcional para reorganizar o conteúdo.
+- Paginação do Notion: o `NotionClient` já segue `has_more` e `next_cursor` na leitura por blocos, que é o plano B. O caminho principal usa o endpoint de markdown, que devolve a página numa chamada só e não tem cursor. Se a página for grande demais, o Notion marca a resposta como truncada, e hoje o backend apenas registra um aviso no log e segue com o que veio. Tratar isso direito está pendente.
+- Testcontainers no CI.
 
 ## Estrutura
 
 ```
-backend/mindmap-api   API em Spring Boot
-frontend              Next.js
-docs                  decisões e imagens
-docker-compose.yml    Postgres local
+backend/mindmap-api      API em Spring Boot
+frontend                 Next.js
+docs                     decisões, deploy e imagens
+docker-compose.yml       Postgres local
+docker-compose.prod.yml  produção (Postgres, API, Caddy)
 ```
 
-## O que ainda não existe
+## Autor e licença
 
-- Tela de login no frontend. O backend já faz o login com o Notion (OAuth2) e a sessão; falta o botão "Entrar", mostrar quem está logado (`/api/me`), o logout (com o cabeçalho `X-XSRF-TOKEN`) e o aviso quando a API responde 401.
-- Salvar mapas no Postgres (JSONB), junto com cores e posições editadas.
-- Botão "atualizar mapa" quando a página muda no Notion.
-- Camada de IA opcional pra reorganizar o conteúdo.
-
-## Segurança
-
-O conteúdo das páginas é tratado como dado não confiável: o front renderiza tudo como texto, sem HTML cru. O login com o Notion usa OAuth2 com sessão no servidor: o navegador só recebe um cookie `HttpOnly`, e o token do Notion de cada pessoa fica só no backend, criptografado no banco (AES-GCM, chave em variável de ambiente), nunca no front nem no log. O ID da página é validado no front e de novo no backend. O CI roda o gitleaks no histórico inteiro do repositório.
+Feito por [Bruno Caffz](https://github.com/BrunoCaffz). O repositório ainda não tem arquivo de licença, então todos os direitos ficam reservados até eu definir uma.

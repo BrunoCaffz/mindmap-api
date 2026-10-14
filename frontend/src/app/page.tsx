@@ -41,8 +41,8 @@ export default function Home() {
   const session = useSession();
   const canGenerate = !DEMO_MODE && (session.user !== null || DEV_FALLBACK);
   const inputRef = useRef<HTMLInputElement>(null);
-  // Na demonstração o mapa de exemplo já nasce carregado, sem chamar o backend.
-  const [tree, setTree] = useState<MindMapNode | null>(DEMO_MODE ? (exampleMap as MindMapNode) : null);
+  // O mapa de exemplo (inclusive na demonstração) só abre pelos cards da tela inicial, sem chamar o backend.
+  const [tree, setTree] = useState<MindMapNode | null>(null);
   // Muda a cada mapa novo: o provider do React Flow recomeça limpo (sem viewport nem nós do mapa anterior).
   const [mapSeq, setMapSeq] = useState(0);
 
@@ -142,7 +142,8 @@ export default function Home() {
               onThemeChange={setTheme}
               mapTitle={tree?.title}
               canExport={tree !== null}
-              onNewMap={DEMO_MODE ? undefined : handleNewMap}
+              onNewMap={DEMO_MODE && tree === null ? undefined : handleNewMap}
+              newMapLabel={DEMO_MODE ? "Voltar ao início" : undefined}
               onToast={setToast}
               drawerOpen={drawerOpen}
               onCloseDrawer={closeDrawer}
@@ -151,6 +152,7 @@ export default function Home() {
               <AppHeader
                 mapTitle={tree?.title}
                 hideAuth={DEMO_MODE}
+                onHome={DEMO_MODE ? handleNewMap : undefined}
                 sessionLoading={session.loading}
                 user={session.user}
                 onLogout={handleLogout}
@@ -198,6 +200,7 @@ export default function Home() {
                       inputRef={inputRef}
                       canGenerate={canGenerate}
                       sessionLoading={session.loading && !DEMO_MODE}
+                      demo={DEMO_MODE}
                       idError={idError}
                       loadError={loadError}
                       onShowExample={handleShowExample}

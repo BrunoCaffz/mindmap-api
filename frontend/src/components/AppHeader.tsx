@@ -9,13 +9,15 @@ interface AppHeaderProps {
   mapTitle?: string;
   // Esconde tudo o que é de login (modo demonstração).
   hideAuth?: boolean;
+  // Quando existe, "Mapas" vira um botão que volta à tela inicial.
+  onHome?: () => void;
   sessionLoading: boolean;
   user: SessionUser | null;
   onLogout: () => void;
   onOpenMenu: () => void;
 }
 
-export function AppHeader({ mapTitle, hideAuth = false, sessionLoading, user, onLogout, onOpenMenu }: AppHeaderProps) {
+export function AppHeader({ mapTitle, hideAuth = false, onHome, sessionLoading, user, onLogout, onOpenMenu }: AppHeaderProps) {
   return (
     <header className="flex min-h-12 flex-none items-center justify-between gap-3 border-b border-line bg-bg py-1 pl-2 pr-3 md:pl-4">
       <div className="flex min-w-0 items-center gap-1 text-muted">
@@ -28,7 +30,17 @@ export function AppHeader({ mapTitle, hideAuth = false, sessionLoading, user, on
           <MenuIcon width={20} height={20} />
         </button>
         <nav aria-label="Onde você está" className="flex min-w-0 items-center gap-1.5">
-          <span className="hidden sm:inline">Mapas</span>
+          {onHome && mapTitle ? (
+            <button
+              type="button"
+              onClick={onHome}
+              className="hidden rounded-sm px-1 transition-colors hover:bg-hover hover:text-ink sm:inline"
+            >
+              Mapas
+            </button>
+          ) : (
+            <span className="hidden sm:inline">Mapas</span>
+          )}
           <span aria-hidden="true" className="hidden sm:inline">
             /
           </span>
