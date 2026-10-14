@@ -4,7 +4,7 @@ Webapp que transforma uma página do Notion em um mapa mental interativo. Spring
 
 [![CI](https://github.com/BrunoCaffz/mindmap-api/actions/workflows/ci.yml/badge.svg)](https://github.com/BrunoCaffz/mindmap-api/actions/workflows/ci.yml)
 
-**Demo:** [mindmap-notion.vercel.app](https://mindmap-notion.vercel.app). Abre na tela inicial e tem um mapa de exemplo fictício para explorar, sem login e sem backend.
+**Demo:** [https://mindmap-notion.vercel.app/](https://mindmap-notion.vercel.app/). Abre na tela inicial e tem um mapa de exemplo fictício para explorar, sem login e sem backend.
 
 <!-- TODO: adicionar a imagem docs/img/mapa.png (screenshot do mapa). Até lá, o link abaixo aparece quebrado. -->
 ![Mapa gerado a partir de uma página do Notion](docs/img/mapa.png)
