@@ -16,9 +16,25 @@ const plexMono = IBM_Plex_Mono({
   weight: ["400"],
 });
 
+const DESCRIPTION = "Transforma uma página do Notion em mapa mental. Cada título vira um galho.";
+
+// As imagens de compartilhamento vêm dos arquivos opengraph-image.png e twitter-image.png desta pasta.
 export const metadata: Metadata = {
+  metadataBase: new URL("https://www.ramificamap.com.br"),
   title: "Notion Mindmap",
-  description: "Transforma uma página do Notion em mapa mental. Cada título vira um galho.",
+  description: DESCRIPTION,
+  openGraph: {
+    type: "website",
+    locale: "pt_BR",
+    siteName: "Notion Mindmap",
+    title: "Notion Mindmap",
+    description: DESCRIPTION,
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Notion Mindmap",
+    description: DESCRIPTION,
+  },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
