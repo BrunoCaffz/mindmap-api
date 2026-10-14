@@ -34,8 +34,7 @@
 </div>
 
 > [!NOTE]
-> The live demo runs in **demo mode**: the same front end with a built-in sample map, no login and
-> no back end. The full app (Notion OAuth, sessions, encrypted tokens) runs locally, see
+> The live demo runs in **localhost**: see how to runs in
 > [Getting Started](#getting-started).
 
 <div align="center">
