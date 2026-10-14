@@ -4,14 +4,14 @@ Webapp que transforma uma página do Notion em um mapa mental interativo. Spring
 
 [![CI](https://github.com/BrunoCaffz/mindmap-api/actions/workflows/ci.yml/badge.svg)](https://github.com/BrunoCaffz/mindmap-api/actions/workflows/ci.yml)
 
-**Demo:** [mindmap-notion.vercel.app](https://mindmap-notion.vercel.app) (modo demo, sem login: mostra um mapa de exemplo fictício, sem backend)
+**Demo:** [mindmap-notion.vercel.app](https://mindmap-notion.vercel.app). Abre na tela inicial e tem um mapa de exemplo fictício para explorar, sem login e sem backend.
 
 <!-- TODO: adicionar a imagem docs/img/mapa.png (screenshot do mapa). Até lá, o link abaixo aparece quebrado. -->
 ![Mapa gerado a partir de uma página do Notion](docs/img/mapa.png)
 
 ## Demonstração em vídeo
 
-<!-- TODO: colocar o link do vídeo aqui. -->
+<!-- TODO: substituir LINK_DO_VIDEO pela URL do vídeo de demonstração quando ele estiver gravado. -->
 [Assistir à demonstração](LINK_DO_VIDEO)
 
 ## Por que existe
@@ -125,6 +125,8 @@ Limite conhecido: o teste de contexto completo (`contextLoads`) está desativado
 
 O repositório traz [`backend/mindmap-api/Dockerfile`](backend/mindmap-api/Dockerfile), [`docker-compose.prod.yml`](docker-compose.prod.yml) (Postgres, API e Caddy) e [`Caddyfile`](Caddyfile) (HTTPS automático) para subir numa VPS única, com o front na Vercel. Passo a passo e backup em [docs/DEPLOY.md](docs/DEPLOY.md).
 
+O Dockerfile e o `docker-compose.prod.yml` foram testados localmente: build da imagem, migrations do Flyway num banco vazio e subida da API. O Caddy e o HTTPS ainda não foram validados em um servidor real.
+
 O app não fica hospedado 24 horas por custo. O que está no ar é a [demo na Vercel](https://mindmap-notion.vercel.app), que roda sem backend.
 
 ## Roadmap
@@ -145,6 +147,10 @@ docker-compose.yml       Postgres local
 docker-compose.prod.yml  produção (Postgres, API, Caddy)
 ```
 
-## Autor e licença
+## Autor
 
-Feito por [Bruno Caffz](https://github.com/BrunoCaffz). O repositório ainda não tem arquivo de licença, então todos os direitos ficam reservados até eu definir uma.
+Feito por [Bruno Caffz](https://github.com/BrunoCaffz).
+
+## Licença
+
+MIT. Veja o arquivo [LICENSE](LICENSE).
