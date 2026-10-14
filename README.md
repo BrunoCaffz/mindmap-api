@@ -3,7 +3,7 @@
 <br />
 <div align="center">
 
-  <h1 align="center">Notion Mindmap</h1>
+  <h1 align="center">Ramifica Map</h1>
 
   <p align="center">
     <b>Turn any Notion page into an interactive mind map.</b>
@@ -50,7 +50,7 @@ https://github.com/user-attachments/assets/14655ffe-59f4-4700-b9b6-24d1248062a8
 Long Notion pages are great for writing and hard for seeing. A study guide, a spec, a set of meeting
 notes: the structure is there, but you scroll through it one screen at a time.
 
-**Notion Mindmap reads a page and draws its structure.** Headings, lists, callouts, columns, code
+**Ramifica Map reads a page and draws its structure.** Headings, lists, callouts, columns, code
 blocks and quotes become a tree of nodes you can fold, search, re-layout and export. It started as a
 study tool: my AWS notes live in long Notion pages, and a map shows the whole outline in one view.
 
